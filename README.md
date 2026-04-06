@@ -113,7 +113,7 @@ You: ship it
 
 ### Claude Code (full experience)
 ```bash
-claude plugins add https://github.com/yourname/agent-ops
+claude plugins add https://github.com/epzee/agent-ops
 ```
 
 ### Other tools
@@ -145,6 +145,15 @@ these automatically. Recommended.
 
 - [Setup](docs/SETUP.md) | [Customizing](docs/CUSTOMIZING.md)
 - [Scheduled tasks](docs/SCHEDULED-TASKS.md) | [Philosophy](docs/PHILOSOPHY.md)
+
+## Resources
+
+- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+- [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+- [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
+- [Agent skills best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)
+- [The complete guide to building skills for Claude](https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf)
+- [agent-skills](https://github.com/addyosmani/agent-skills) — engineering skills for Define → Ship
 
 ## License
 MIT

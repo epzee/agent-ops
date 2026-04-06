@@ -40,3 +40,13 @@ questions unless genuinely [blocking]. Record assumptions as
 Save: plans/YYYY-MM-DD-[slug].md.
 
 Summary: tasks, complexity, blockers, assumptions, files.
+
+## Example task
+
+```markdown
+### 1. Add preference storage schema
+**What:** Create preferences table with user_id FK, category enum,
+enabled boolean, and quiet_hours JSONB column. Add migration.
+**Files:** src/db/migrations/005_preferences.sql, src/db/schema.ts
+**Verify:** `bun run migrate && bun test src/db/`
+```

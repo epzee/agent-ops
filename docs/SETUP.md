@@ -3,7 +3,7 @@
 ## Claude Code (full experience)
 
 ```bash
-claude plugins add https://github.com/yourname/agent-ops
+claude plugins add https://github.com/epzee/agent-ops
 ```
 
 ## Other tools

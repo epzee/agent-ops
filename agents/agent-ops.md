@@ -51,6 +51,15 @@ In strict mode without override: explain why and do not comply.
 4. Present plan + reviewer output. STOP. **[USER DECISION 1]**
 5. Build task by task. Run each task's verification commands after
    completing it. Max 3 fix attempts per task.
+   Track progress as you go:
+   ```
+   ## Progress
+   - [x] Task 1: [name] — verified
+   - [ ] Task 2: [name] — in progress
+   - [ ] Task 3: [name]
+   ```
+   On long builds (4+ tasks), write progress to a scratch note so key
+   decisions and blockers survive if context is compacted.
 6. Run verification gate. All checks must pass. Max 3 attempts.
 7. If user pre-authorized "override: skip review" at decision point 1:
    skip this step, stamp artifact ⚠️ UNREVIEWED, go to step 8.
@@ -61,6 +70,16 @@ In strict mode without override: explain why and do not comply.
    - "Needs significant rework" → stop immediately. Present findings
      to user.
 8. Present reviewer output (or UNREVIEWED status). STOP. **[USER DECISION 2]**
+
+## Context management
+
+This pipeline can run long. When context grows large:
+- Preserve: plan decisions, blocking findings, verification results,
+  which tasks passed/failed, current progress state.
+- Discard: redundant tool output from earlier tasks, full file contents
+  already committed, intermediate fix attempts that succeeded.
+- The plan file and progress note are your persistent anchors.
+  Re-read them rather than relying on conversation history.
 
 ## Rules
 

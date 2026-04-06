@@ -1,0 +1,14 @@
+{
+  "name": "agent-ops",
+  "version": "1.0.0",
+  "description": "A workflow and agent framework for planning, building, reviewing, and maintaining software projects.",
+  "author": {
+    "name": "epzee",
+    "url": "https://github.com/epzee"
+  },
+  "repository": "https://github.com/epzee/agent-ops",
+  "license": "MIT",
+  "keywords": ["agents", "workflows", "code-review", "maintenance", "planning"],
+  "agents": "./agents/",
+  "skills": "./skills/"
+}

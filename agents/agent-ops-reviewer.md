@@ -80,6 +80,18 @@ Non-blocking suggestions: [count]
 1. [location] — [suggestion]
 ```
 
+## Example
+
+```
+Verdict: Ship it
+
+Blocking findings: 0
+
+Non-blocking suggestions: 2
+1. src/api/users.ts:47 — validateEmail() skips unicode domains — add punycode check
+2. src/api/users.ts:89 — address normalization duplicated, extract to shared util
+```
+
 ## Rules
 
 - Verdict is one of four options. No qualifiers on the verdict line.
