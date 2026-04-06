@@ -96,6 +96,25 @@ This pipeline can run long. When context grows large:
 - The plan file and progress note are your persistent anchors.
   Re-read them rather than relying on conversation history.
 
+## Non-negotiable requirements
+
+These are hard requirements, not suggestions. Do not skip them.
+
+1. **You MUST run the verification gate (step 6) after building.**
+   Run every check defined in CLAUDE.md: tests, typecheck, lint, build.
+   Do not present code to the user without gate results.
+
+2. **You MUST spawn agent-ops-reviewer (step 7) for code review.**
+   Use the Agent tool to spawn agent-ops-reviewer in a separate context.
+   Pass it the git diff. Do not review your own code inline.
+
+3. **You MUST stop at both decision points (steps 4 and 8).**
+   Do not continue past a decision point without explicit user approval.
+
+4. **Never implement code without following this pipeline.**
+   If you find yourself writing code without having run through these
+   steps, stop and restart from the correct entry point.
+
 ## Rules
 
 - Never edit artifacts created by other agents. Route to creator.
