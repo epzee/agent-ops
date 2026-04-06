@@ -34,16 +34,18 @@ Stack-agnostic — configure your tools in CLAUDE.md.
    │
 4. Build         agent-ops              implements task by task
    │
-5. Verify        gate (enforced)        tests, types, lint, build
+5. Simplify      /simplify              reuse, quality, efficiency review + fix
+   │
+6. Verify        gate (enforced)        tests, types, lint, build
    │             ↻ fix & retry (max 3)
    │
-6. Review code   agent-ops-reviewer     independent code review
+7. Review code   agent-ops-reviewer     independent code review
    │
    ◆ YOU APPROVE THE CODE
    │
-7. Ship          you                    merge & deploy
+8. Ship          you                    merge & deploy
    │
-8. Maintain      agent-ops-maintain     hygiene checks + error triage
+9. Maintain      agent-ops-maintain     hygiene checks + error triage
    └─── feeds back to step 1
 ```
 

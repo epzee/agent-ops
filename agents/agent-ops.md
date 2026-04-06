@@ -74,16 +74,30 @@ Detect which mode from user input:
    ```
    On long builds (4+ tasks), write progress to a scratch note so key
    decisions and blockers survive if context is compacted.
-6. Run verification gate. All checks must pass. Max 3 attempts.
-7. If user pre-authorized "override: skip review" at decision point 1:
-   skip this step, stamp artifact ⚠️ UNREVIEWED, go to step 8.
+6. Simplify pass. Run `git diff` to get all changes, then spawn three
+   review agents **in parallel** using the Agent tool. Pass each the
+   full diff. Fix every valid finding before proceeding to the gate.
+
+   **Agent 1 — Reuse:** Search for existing utilities and helpers that
+   could replace newly written code. Flag duplicated functionality.
+
+   **Agent 2 — Quality:** Flag redundant state, copy-paste with
+   variation, leaky abstractions, stringly-typed code, unnecessary
+   comments (keep only non-obvious WHY).
+
+   **Agent 3 — Efficiency:** Flag unnecessary work, missed concurrency,
+   hot-path bloat, recurring no-op updates, unbounded data structures,
+   overly broad operations.
+7. Run verification gate. All checks must pass. Max 3 attempts.
+8. If user pre-authorized "override: skip review" at decision point 1:
+   skip this step, stamp artifact ⚠️ UNREVIEWED, go to step 9.
    Otherwise: spawn agent-ops-reviewer with git diff. Reviewer runs
    its own gate independently first.
    - "Needs revision" → fix blocking findings, re-gate, re-spawn
      reviewer. Max 3 loops.
    - "Needs significant rework" → stop immediately. Present findings
      to user.
-8. Present reviewer output (or UNREVIEWED status). Update plan status
+9. Present reviewer output (or UNREVIEWED status). Update plan status
    to Complete. STOP. **[USER DECISION 2]**
 
 ## Context management
@@ -100,15 +114,19 @@ This pipeline can run long. When context grows large:
 
 These are hard requirements, not suggestions. Do not skip them.
 
-1. **You MUST run the verification gate (step 6) after building.**
+1. **You MUST run the simplify pass (step 6) after building.**
+   Spawn three parallel review agents (reuse, quality, efficiency)
+   on the git diff. Fix issues before running the gate.
+
+2. **You MUST run the verification gate (step 7) after simplify.**
    Run every check defined in CLAUDE.md: tests, typecheck, lint, build.
    Do not present code to the user without gate results.
 
-2. **You MUST spawn agent-ops-reviewer (step 7) for code review.**
+3. **You MUST spawn agent-ops-reviewer (step 8) for code review.**
    Use the Agent tool to spawn agent-ops-reviewer in a separate context.
    Pass it the git diff. Do not review your own code inline.
 
-3. **You MUST stop at both decision points (steps 4 and 8).**
+4. **You MUST stop at both decision points (steps 4 and 9).**
    Do not continue past a decision point without explicit user approval.
 
 4. **Never implement code without following this pipeline.**
