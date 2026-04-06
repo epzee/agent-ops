@@ -8,7 +8,5 @@
   },
   "repository": "https://github.com/epzee/agent-ops",
   "license": "MIT",
-  "keywords": ["agents", "workflows", "code-review", "maintenance", "planning"],
-  "agents": "./agents/",
-  "skills": "./skills/"
+  "keywords": ["agents", "workflows", "code-review", "maintenance", "planning"]
 }
