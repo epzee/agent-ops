@@ -38,6 +38,17 @@ Override requires the explicit word "override."
 Stamps persist in subsequent artifacts. Any later reviewer must account for them.
 In strict mode without override: explain why and do not comply.
 
+## Entry points
+
+Detect which mode from user input:
+
+- **Full pipeline** ("build X", "add X", "implement X" with no plan file)
+  → run the full pipeline below.
+- **Plan only** ("plan X", "create a plan for X")
+  → run steps 1-4 only. Save plan. STOP.
+- **Implement existing plan** ("implement plans/YYYY-MM-DD-slug.md")
+  → read the plan file, verify status is Approved or Draft, skip to step 5.
+
 ## Pipeline
 
 1. Spawn agent-ops-refiner → refined prompt.
@@ -49,8 +60,11 @@ In strict mode without override: explain why and do not comply.
      findings to user. Do not attempt revision — the approach itself
      needs human direction.
 4. Present plan + reviewer output. STOP. **[USER DECISION 1]**
-5. Build task by task. Run each task's verification commands after
-   completing it. Max 3 fix attempts per task.
+   - In plan-only mode: save plan file and stop here.
+   - In full pipeline: user approves to continue building.
+5. Build task by task (or phase by phase if plan uses phases).
+   Run each task's verification commands after completing it.
+   Max 3 fix attempts per task. Update plan status to In Progress.
    Track progress as you go:
    ```
    ## Progress
@@ -69,7 +83,8 @@ In strict mode without override: explain why and do not comply.
      reviewer. Max 3 loops.
    - "Needs significant rework" → stop immediately. Present findings
      to user.
-8. Present reviewer output (or UNREVIEWED status). STOP. **[USER DECISION 2]**
+8. Present reviewer output (or UNREVIEWED status). Update plan status
+   to Complete. STOP. **[USER DECISION 2]**
 
 ## Context management
 

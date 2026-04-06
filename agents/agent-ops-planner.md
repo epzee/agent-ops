@@ -18,7 +18,10 @@ Before starting, scan .claude/skills/ and installed plugin skills.
 Read names/descriptions only. Load relevant skills for current phase,
 tech, and task type. Don't load all.
 
-Follow plan-format skill.
+Check if the project has a plans/CLAUDE.md or plans/ directory with
+existing plans. If it does, follow the project's plan conventions
+(format, metadata, phase structure, naming). Fall back to plan-format
+skill only when no project conventions exist.
 
 ## Modes
 

@@ -100,6 +100,21 @@ You: ship it
   → Silence: analytics timeout, third-party noise
 ```
 
+### Plan now, build later
+
+```
+@agent-ops plan add push notification preferences
+  → Refiner → Planner → Reviewer → saved to plans/
+  → You review and approve the plan
+  → Plan sits in plans/2026-04-06-notification-prefs.md (status: Approved)
+
+  ... days later ...
+
+@agent-ops implement plans/2026-04-06-notification-prefs.md
+  → Reads plan → Builds → Gate → Review
+  → You approve the code
+```
+
 ### Standalone agents
 
 ```
