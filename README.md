@@ -113,7 +113,8 @@ You: ship it
 
 ### Claude Code (full experience)
 ```bash
-claude plugins add https://github.com/epzee/agent-ops
+claude plugin marketplace add https://github.com/epzee/agent-ops
+claude plugin install agent-ops
 ```
 
 ### Other tools
