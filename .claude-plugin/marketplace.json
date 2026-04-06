@@ -1,0 +1,19 @@
+{
+  "name": "agent-ops",
+  "owner": {
+    "name": "epzee"
+  },
+  "metadata": {
+    "description": "Workflow and agent framework for planning, building, reviewing, and maintaining software projects."
+  },
+  "plugins": [
+    {
+      "name": "agent-ops",
+      "source": {
+        "source": "github",
+        "repo": "epzee/agent-ops"
+      },
+      "description": "A workflow and agent framework for planning, building, reviewing, and maintaining software projects."
+    }
+  ]
+}
