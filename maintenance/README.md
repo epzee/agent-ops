@@ -114,7 +114,11 @@ Run any task directly:
 
 1. Create a markdown file in the appropriate category directory
 2. Add YAML frontmatter with `name` and `description`
-3. Keep the prompt under 100 lines (including frontmatter and report format)
+3. Keep task files under ~2,000 tokens (~60–80 lines). This leaves
+   the agent's context budget for actual work — reading files, running
+   tools, and producing the report. If a task needs more instruction
+   than this, split reference material into a supporting file in the
+   same directory that the agent reads on demand.
 4. Add the task to `schedules.md` with a cadence and rationale
 5. Follow the report format: severity → finding → file/line → action
 
