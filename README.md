@@ -83,26 +83,31 @@ graph TD
 
 ### Full pipeline
 
+```mermaid
+sequenceDiagram
+    You->>agent-ops: add push notifications
+    Note right of agent-ops: Refine → Plan → Review plan
+    agent-ops->>You: Plan + verdict (0 blocking)
+    You->>agent-ops: go ahead
+    Note right of agent-ops: Build → Simplify → Gate → Review code
+    agent-ops->>You: Code + verdict (Ship it)
+    You->>agent-ops: ship it
 ```
-You: @agent-ops add push notification preferences
 
-  [autonomous]
-  → Refiner shapes idea → Planner creates plan → Reviewer reviews
+### Plan now, build later
 
-You see: plan + verdict
-  Verdict: Ready to implement
-  Blocking findings: 0
-  Non-blocking suggestions: 1
-You: go ahead
-
-  [autonomous]
-  → Builds → Gate passes → Reviewer reviews code
-
-You see: code + verdict
-  Verdict: Ship it
-  Blocking findings: 0
-  Non-blocking suggestions: 1
-You: ship it
+```mermaid
+sequenceDiagram
+    You->>agent-ops: plan the auth migration
+    Note right of agent-ops: Refine → Plan → Review
+    agent-ops->>You: Plan + verdict
+    You->>agent-ops: approved
+    Note right of agent-ops: Saved to plans/
+    Note over You: Days later...
+    You->>agent-ops: implement plans/2026-04-06-auth.md
+    Note right of agent-ops: Build → Simplify → Gate → Review
+    agent-ops->>You: Code + verdict
+    You->>agent-ops: ship it
 ```
 
 ### Enforcement
@@ -119,51 +124,21 @@ You: ship it
 
 3 failures → escalates to you with full context.
 
-### Plan now, build later
-
-```
-@agent-ops plan add push notification preferences
-  → Refiner → Planner → Reviewer → saved to plans/
-  → You review and approve the plan
-  → Plan sits in plans/2026-04-06-notification-prefs.md (status: Approved)
-
-  ... days later ...
-
-@agent-ops implement plans/2026-04-06-notification-prefs.md
-  → Reads plan → Builds → Gate → Review
-  → You approve the code
-```
-
-### Maintain: two modes
-
-```
-@agent-ops-maintain run weekly checks
-  → Runs tools, reads output, compares thresholds
-  → 2 critical vulns, coverage below floor, 3 stale PRs
-
-@agent-ops-maintain triage today's errors
-  → Investigates: reads stack traces, finds code, correlates deploys
-  → Critical: checkout crash since Friday deploy
-  → Silence: analytics timeout, third-party noise
-```
-
 ## Repo structure
 
 ```
-agents/              5 agents — coordinator + 4 phase specialists
-skills/              5 skills — gate, review criteria, plan format,
-                     maintenance checks, refiner roles
-workflows/           4 workflows — feature, plan-only, add-tests, template
-maintenance/         26 maintenance tasks organized by category:
-  code-health/         complexity, dead code, TODOs, deps, bundle size
-  security/            vulns, secrets, licenses, OWASP surface
-  testing/             coverage, flaky tests, missing tests, lint drift
-  production/          errors, perf, stale PRs, deploy frequency
-  ai-docs/             CLAUDE.md freshness, skills, prompt drift,
-                       best practices, ecosystem, AI docs review
-  documentation/       README, API docs, changelog gaps
-templates/           CLAUDE.md sections to add to your project
-docs/                setup, customizing, scheduled tasks, philosophy
+├── agents/          5 agents — coordinator + 4 specialists
+├── skills/          5 skills — gate, review, plan format, maintenance, roles
+├── workflows/       4 workflows — feature, plan-only, add-tests, template
+├── maintenance/     26 tasks by category
+│   ├── code-health/   complexity, dead code, TODOs, deps, bundle
+│   ├── security/      vulns, secrets, licenses, OWASP
+│   ├── testing/       coverage, flaky, missing, lint drift
+│   ├── production/    errors, perf, stale PRs, deploys
+│   ├── ai-docs/       CLAUDE.md, skills, prompts, best practices, ecosystem
+│   └── documentation/ README, API docs, changelog
+├── templates/       CLAUDE.md sections for your project
+└── docs/            setup, customizing, scheduled tasks, philosophy
 ```
 
 ## Skill discovery
