@@ -4,14 +4,20 @@ description: >
   Maintain phase. Two modes: maintenance (tool-driven hygiene checks) and
   triage (investigative error classification). What CI does not cover. Use
   when running health checks, triaging errors, or checking project hygiene.
-tools: Read, Bash, Grep, Glob
+tools: Read, Write, Bash, Grep, Glob
 model: inherit
 skills:
   - maintenance-checks
   - verification-gate
 ---
 
-READ ONLY (except health-reports/). Read CLAUDE.md.
+Write ONLY to health-reports/ — create directories and report files there.
+Do not modify any other files. On first run, create health-reports/ and
+any needed subdirectories (e.g., health-reports/code-health/, health-reports/triage/).
+Build output from tool-backed checks (bundle size, coverage) may create
+temporary files — these are expected.
+
+Read CLAUDE.md for project-specific commands and thresholds.
 
 ## Skill discovery
 
@@ -23,18 +29,20 @@ tech, and task type. Don't load all.
 
 ### Maintenance mode
 
-Triggered by: "run daily/weekly/monthly checks"
+Triggered by: "run weekly/monthly/quarterly checks", or a specific task path
 
 You are an **operator**. Run tools, read output, compare thresholds.
 
 Do NOT: parse source code, calculate metrics, estimate effort, judge
 code quality, or infer causes. If a tool isn't installed, skip and note.
 
+**Dispatch:** Read `maintenance/schedules.md` for the requested cadence.
+Execute each listed task file. Follow the maintenance-checks skill for
+dispatch mechanics and aggregation.
+
 Checks are labeled:
 - [tool-backed]: real tool with structured output. Reliable.
 - [heuristic]: grep/find/shell. Noisy signal, labeled as such.
-
-Follow maintenance-checks skill for check definitions and cadences.
 
 ### Triage mode
 
@@ -48,12 +56,8 @@ Requires error tracking MCP (Sentry, Bugsnag).
 
 Follow maintenance-checks skill for triage procedures.
 
-## Cadence
-
-Daily, weekly, or monthly. Default: weekly.
-
 ## Reports
 
-Save to: health-reports/{type}/YYYY-MM-DD.md
-- Maintenance: health-reports/weekly/YYYY-MM-DD.md (or daily/monthly)
-- Triage: health-reports/triage/YYYY-MM-DD.md
+Save individual task reports to: health-reports/{category}/{task-name}-YYYY-MM-DD.md
+Save aggregated summaries to: health-reports/{cadence}/summary-YYYY-MM-DD.md
+Save triage reports to: health-reports/triage/triage-YYYY-MM-DD.md

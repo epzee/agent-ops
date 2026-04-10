@@ -1,87 +1,63 @@
 ---
 name: maintenance-checks
 description: >
-  Defines engineering hygiene checks organized by cadence (daily, weekly,
-  monthly) plus error triage procedures. Maintenance mode runs tools and
-  reads output. Triage mode investigates production errors. Use when
-  running health checks or triaging errors.
+  Dispatches scheduled maintenance tasks and handles error triage.
+  Maintenance mode reads maintenance/schedules.md and executes the
+  appropriate task files for the requested cadence. Triage mode
+  investigates production errors. Use when running health checks or
+  triaging errors.
 ---
 
-Two sections: **SCHEDULED CHECKS** (maintenance mode, operator) and
-**ERROR TRIAGE** (triage mode, investigator).
-
-All tool-backed checks read their commands from the project's CLAUDE.md
-under `## Maintenance commands`. If a command is listed as "not configured,"
-skip the check and note it in the report.
-
-Labels: [tool-backed] = reliable. [heuristic] = noisy, labeled as such.
+Two modes: **SCHEDULED CHECKS** (maintenance, operator) and
+**ERROR TRIAGE** (triage, investigator).
 
 ---
 
 # Scheduled checks
 
-## Daily (~2 min)
+## How dispatch works
 
-### CI status [tool-backed]
-- Run/query: latest CI status on this repo's main branch
-- Report: passing or failing, since when, which workflow
-- Scoped to current repo only
+0. Read the project's CLAUDE.md once — extract `## Maintenance commands`
+   and `## Health thresholds`. Task files reference these sections;
+   having them loaded avoids re-reading per task.
+1. Read `maintenance/schedules.md` to determine which tasks belong to
+   the requested cadence (weekly, monthly, quarterly).
+2. For each task in that cadence, read its `.md` file from the
+   `maintenance/` subdirectory.
+3. Execute the task as written — follow its setup, checks, and report
+   format exactly.
+4. Each task produces its own detailed report using the standard format:
+   `## Critical` / `## Warning` / `## Info` sections with findings,
+   file/line references, and recommended actions.
+5. After all tasks complete, produce an aggregated summary table.
 
-## Weekly (~5 min)
+Task files define report CONTENT format only. The save path is
+determined by the agent: health-reports/{category}/{task-name}-YYYY-MM-DD.md
 
-### Dependency vulnerabilities [tool-backed]
-- Run: command from CLAUDE.md → `Maintenance commands` → `Dependency vulnerabilities`
-- Report: critical, high, moderate, low counts
+Labels: [tool-backed] = reliable. [heuristic] = noisy, labeled as such.
 
-### Outdated dependencies [tool-backed]
-- Run: command from CLAUDE.md → `Maintenance commands` → `Outdated dependencies`
-- Flag: 2+ major versions behind
+## Running a single task
 
-### Coverage trend [tool-backed]
-- Run: coverage command from CLAUDE.md
-- Compare: against floor + last week's report
-- Flag: below floor, or >2% drop week-over-week
+When given a specific task file path (e.g., `run maintenance/security/secret-scan.md`),
+execute only that task. Skip cadence lookup.
 
-### Configuration integrity [heuristic]
-- Check: .env.example vs env var usage in code
-- Check: .gitignore coverage
-- Note: grep-based, may have false positives
+## Aggregated summary format
 
-### Stale PRs/branches [tool-backed/heuristic]
-- GitHub MCP or git commands
-- List with age and author
+After all task reports are produced, output one summary table:
 
-## Monthly (~15 min)
+```
+# Maintenance Summary — [project] — YYYY-MM-DD — [cadence]
 
-### Security [tool-backed + heuristic]
-- Audit (tool-backed): command from CLAUDE.md → `Maintenance commands` → `Security audit`
-- Git history (heuristic): was .env ever committed?
-- Grep (heuristic): common secret patterns in source
+| Task | Status | Critical | Warning | Info | Detail |
+|------|--------|----------|---------|------|--------|
+| [name] | ✅/⚠️/❌ | [n] | [n] | [n] | [top finding] |
 
-### Unused dependencies [tool-backed]
-- Run: command from CLAUDE.md → `Maintenance commands` → `Unused dependencies`
-- Skip if not configured.
+### Action items
+1. [numbered list of what needs attention, critical first]
+```
 
-### Dead exports [tool-backed]
-- Run: command from CLAUDE.md → `Maintenance commands` → `Dead exports`
-- Skip if not configured.
-
-### Feature flags [heuristic]
-- Grep for flag patterns. Human judges staleness.
-
-### Documentation drift [comparison]
-- README commands vs build/run scripts
-- CLAUDE.md thresholds vs weekly report reality
-
-## Output format
-
-Report with tables per section:
-
-| Check | Status | Detail |
-|-------|--------|--------|
-| [name] | ✅/⚠️/❌ | [counts or summary] |
-
-End with **Action items** — numbered list of what needs attention.
+Individual task reports are saved to `health-reports/{category}/{task-name}-YYYY-MM-DD.md`.
+The summary is saved to `health-reports/{cadence}/summary-YYYY-MM-DD.md`.
 
 ---
 
@@ -130,4 +106,4 @@ Requires error tracking MCP (Sentry, Bugsnag, etc.).
 1. [description] — [reason to ignore]
 ```
 
-Save to: health-reports/triage/YYYY-MM-DD.md
+Save to: health-reports/triage/triage-YYYY-MM-DD.md

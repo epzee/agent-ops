@@ -1,53 +1,13 @@
 # agent-ops
 
-A workflow and agent framework for planning, building, reviewing, and
-maintaining software projects.
+You make two decisions — approve the plan, approve the code. Everything
+else is autonomous: agents refine your idea, plan the work, build it,
+verify it passes, and review the code. You stay in control of what
+matters. The agents handle the rest.
 
-You describe what you want. The agents plan it, review the plan, build it,
-verify it passes, review the code, and present you with the result. You
-make two decisions: approve the plan, approve the code.
-
-Designed for Claude Code. Usable as system prompts in other tools.
-Stack-agnostic — configure your tools in CLAUDE.md.
-
-## The lifecycle
-
-```
- DEFINE       PLAN        BUILD       VERIFY      REVIEW       SHIP       MAINTAIN
-┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐
-│  Idea  │→ │  Spec  │→ │  Code  │→ │  Test  │→ │   QA   │→ │   Go   │→ │ Hygiene│
-│ Refine │  │  Plan  │  │  Impl  │  │  Gate  │  │  Gate  │  │  Live  │  │ Triage │
-└────────┘  └────────┘  └────────┘  └────────┘  └────────┘  └────────┘  └────────┘
-                              ▲           │          │                        │
-                              │    ◆ enforced  ◆ YOU approve           feeds back
-                              └── fix & retry                       to DEFINE ──┘
-```
-
-```
-1. Define        agent-ops-refiner      shapes your idea
-   │
-2. Plan          agent-ops-planner      creates structured plan
-   │
-3. Review plan   agent-ops-reviewer     reviews plan
-   │
-   ◆ YOU APPROVE THE PLAN
-   │
-4. Build         agent-ops              implements task by task
-   │
-5. Simplify      /simplify              reuse, quality, efficiency review + fix
-   │
-6. Verify        gate (enforced)        tests, types, lint, build
-   │             ↻ fix & retry (max 3)
-   │
-7. Review code   agent-ops-reviewer     independent code review
-   │
-   ◆ YOU APPROVE THE CODE
-   │
-8. Ship          you                    merge & deploy
-   │
-9. Maintain      agent-ops-maintain     hygiene checks + error triage
-   └─── feeds back to step 1
-```
+Zero runtime dependencies. Pure markdown that works wherever your host
+tool runs. Designed for Claude Code; usable as system prompts in other
+tools. Stack-agnostic — configure your tools in CLAUDE.md.
 
 ## What it looks like
 
@@ -89,19 +49,6 @@ You: ship it
 
 3 failures → escalates to you with full context.
 
-### Maintain: two modes
-
-```
-@agent-ops-maintain run weekly checks
-  → Runs tools, reads output, compares thresholds
-  → 2 critical vulns, coverage below floor, 3 stale PRs
-
-@agent-ops-maintain triage today's errors
-  → Investigates: reads stack traces, finds code, correlates deploys
-  → Critical: checkout crash since Friday deploy
-  → Silence: analytics timeout, third-party noise
-```
-
 ### Plan now, build later
 
 ```
@@ -117,28 +64,112 @@ You: ship it
   → You approve the code
 ```
 
-### Standalone agents
+### Maintain: two modes
 
 ```
-@agent-ops-refiner think through this API redesign
-@agent-ops-planner plan the migration
-@agent-ops-reviewer review my PR, be brutal
-@agent-ops-maintain triage errors
+@agent-ops-maintain run weekly checks
+  → Runs tools, reads output, compares thresholds
+  → 2 critical vulns, coverage below floor, 3 stale PRs
+
+@agent-ops-maintain triage today's errors
+  → Investigates: reads stack traces, finds code, correlates deploys
+  → Critical: checkout crash since Friday deploy
+  → Silence: analytics timeout, third-party noise
 ```
+
+## How it works
+
+<!-- Flow: Input → Refine → Plan → Review plan → [Approve?] → Build → Simplify → Gate → [Pass?] → Review code → [Approve?] → Ship → Maintain → loops back -->
+```mermaid
+graph TD
+    Input[Your idea]
+
+    subgraph auto1 ["Define and Plan"]
+        Refine[Refine] --> Plan[Plan] --> ReviewPlan[Review plan]
+    end
+
+    Input --> Refine
+    ReviewPlan --> ApprovePlan{Approve plan?}
+    ApprovePlan -->|No| Refine
+    ApprovePlan -->|Yes| Build
+
+    subgraph auto2 ["Build and Verify"]
+        Build[Build] --> Simplify[Simplify] --> Gate[Verify gate]
+    end
+
+    Gate -->|Fail| Build
+    Gate -->|3 failures| Escalate[Escalate to you]
+    Gate -->|Pass| ReviewCode[Review code]
+    ReviewCode --> ApproveCode{Approve code?}
+    ApproveCode -->|No| Build
+    ApproveCode -->|Yes| Ship[Ship]
+
+    Ship --> Maintain[Maintain]
+    Maintain -.-> Input
+```
+
+## Standalone agents
+
+Use `@agent-ops` for the full pipeline. Use standalone agents when
+you want just one phase:
+
+| Agent | Use when | Example |
+|-------|----------|---------|
+| `@agent-ops-refiner` | Exploring an idea before committing to a plan | `think through this API redesign` |
+| `@agent-ops-planner` | You already know what to build, need a structured plan | `plan the migration` |
+| `@agent-ops-reviewer` | You have code ready and want an independent review | `review my PR, be brutal` |
+| `@agent-ops-maintain` | Running health checks or triaging production errors | `triage errors` |
 
 ## Install
 
-### Claude Code (full experience)
+### Prerequisites
+
+- [Claude Code](https://claude.ai/download) CLI or desktop app
+- A project with a CLAUDE.md file (the agents read it for configuration)
+
+### Quick start
+
 ```bash
+# 1. Install the plugin
 claude plugin marketplace add https://github.com/epzee/agent-ops
 claude plugin install agent-ops
+
+# 2. Add agent-ops sections to your project's CLAUDE.md
+#    Copy from templates/CLAUDE-md-sections.md — sets thresholds,
+#    maintenance commands, and monitoring config
+
+# 3. Create a plans directory
+mkdir plans
+
+# 4. Verify it works (health-reports/ is created automatically on first run)
+@agent-ops-maintain run weekly checks
 ```
 
+See [setup guide](docs/SETUP.md) for project configuration details.
+
 ### Other tools
+
 Use the markdown body of any agent file as a system prompt.
 The autonomous pipeline requires subagent support. Independent
 reviewer context requires isolated subagent sessions.
-See [setup guide](docs/SETUP.md).
+
+## Repo structure
+
+```
+agents/              5 agents — coordinator + 4 phase specialists
+skills/              5 skills — gate, review criteria, plan format,
+                     maintenance checks, refiner roles
+workflows/           4 workflows — feature, plan-only, add-tests, template
+maintenance/         25 maintenance tasks organized by category:
+  code-health/         complexity, dead code, TODOs, deps, bundle size
+  security/            vulns, secrets, licenses, OWASP surface
+  testing/             coverage, flaky tests, missing tests, lint drift
+  production/          errors, perf, stale PRs, deploy frequency
+  ai-docs/             CLAUDE.md freshness, skills, prompt drift, ecosystem
+  documentation/       README, API docs, changelog gaps
+templates/           CLAUDE.md sections to add to your project
+docs/                setup, customizing, scheduled tasks, philosophy
+```
 
 ## Skill discovery
 
@@ -146,18 +177,25 @@ Agents discover and load relevant skills at runtime from
 .claude/skills/, installed plugins, and skill packs.
 
 ### Works great with
+
 **[agent-skills](https://github.com/addyosmani/agent-skills)** —
 engineering skills for Define → Ship. Agents discover and use
-these automatically. Recommended.
+these automatically. Recommended but not required — the pipeline
+works standalone.
 
-## Limitations
+## Design
 
-- State lives in conversation. Resume to continue.
-- Claude Code-first. Pipeline needs subagents.
-- Independent review needs isolated subagent contexts.
-  In single-context tools, reviewer shares thread with builder.
-- Maintenance commands configured per-project in CLAUDE.md.
-- Not a runtime. Markdown guiding the host tool.
+- **Markdown, not runtime.** No dependencies, no build step, no lock-in.
+  Works wherever your host tool runs. Uninstall by deleting.
+- **State in conversation.** Plans and reports are written to disk. The
+  pipeline sequence (which phase is next, retry count) lives in
+  conversation context — closing the conversation stops the pipeline.
+  Resume by referencing the saved plan or report.
+- **Claude Code-first.** The full autonomous pipeline needs subagent
+  support. Independent review needs isolated contexts. In single-context
+  tools, the reviewer shares the builder's thread.
+- **Commands in CLAUDE.md.** The framework defines what to check;
+  your project defines how. No hardcoded tool names.
 
 ## Docs
 

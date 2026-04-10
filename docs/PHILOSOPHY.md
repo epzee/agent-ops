@@ -1,8 +1,49 @@
 # Philosophy
 
+## The lifecycle at a glance
+
+```
+ DEFINE       PLAN        BUILD       VERIFY      REVIEW       SHIP       MAINTAIN
+┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐
+│  Idea  │→ │  Spec  │→ │  Code  │→ │  Test  │→ │   QA   │→ │   Go   │→ │ Hygiene│
+│ Refine │  │  Plan  │  │  Impl  │  │  Gate  │  │  Gate  │  │  Live  │  │ Triage │
+└────────┘  └────────┘  └────────┘  └────────┘  └────────┘  └────────┘  └────────┘
+                              ▲           │          │                        │
+                              │    ◆ enforced  ◆ YOU approve           feeds back
+                              └── fix & retry                       to DEFINE ──┘
+```
+
+### Step by step
+
+```
+1. Define        agent-ops-refiner      shapes your idea
+   │
+2. Plan          agent-ops-planner      creates structured plan
+   │
+3. Review plan   agent-ops-reviewer     reviews plan
+   │
+   ◆ YOU APPROVE THE PLAN
+   │
+4. Build         agent-ops              implements task by task
+   │
+5. Simplify      /simplify              reuse, quality, efficiency review + fix
+   │
+6. Verify        gate (enforced)        tests, types, lint, build
+   │             ↻ fix & retry (max 3)
+   │
+7. Review code   agent-ops-reviewer     independent code review
+   │
+   ◆ YOU APPROVE THE CODE
+   │
+8. Ship          you                    merge & deploy
+   │
+9. Maintain      agent-ops-maintain     hygiene checks + error triage
+   └─── feeds back to step 1
+```
+
 ## Why workflow framework, not engine
 
-22 markdown files, no runtime. The host tool (Claude Code or another
+Plain markdown files, no runtime. The host tool (Claude Code or another
 LLM tool) is the engine. agent-ops provides structure: which phases
 exist, what each agent does, what gates must pass, when humans decide.
 This means zero dependencies, instant uninstall, and portability
