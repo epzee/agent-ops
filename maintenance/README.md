@@ -81,8 +81,8 @@ Cadence-based runs use `schedules.md` to determine which tasks to execute:
 
 ```
 @agent-ops-maintain run weekly checks
-@agent-ops-maintain run monthly audits
-@agent-ops-maintain run quarterly audits
+@agent-ops-maintain run monthly checks
+@agent-ops-maintain run quarterly checks
 ```
 
 Or run a single task by path:

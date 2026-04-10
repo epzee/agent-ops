@@ -15,6 +15,7 @@ Phases: Define → Plan → Build → Verify → Review → Ship
 | Plan | @agent-ops-planner | No |
 | Review — plan | @agent-ops-reviewer | **Yes — approve** |
 | Build | @agent-ops or manual | No |
+| Simplify | 3 parallel review agents | No |
 | Verify (enforced) | gate | No. Fails → fix (max 3) |
 | Review — code | @agent-ops-reviewer (gate first) | **Yes — ship or fix** |
 | Ship | | **Yes** |
@@ -35,6 +36,7 @@ The coordinator runs the full pipeline. You make two decisions:
 2. `@agent-ops-planner [refined prompt]` → plan file
 3. `@agent-ops-reviewer [plan file]` → plan verdict
 4. Build tasks from plan
-5. Run verification gate
-6. `@agent-ops-reviewer [git diff]` → code verdict
-7. Ship
+5. Run simplify pass: spawn reuse, quality, efficiency reviews on `git diff`, fix findings
+6. Run verification gate
+7. `@agent-ops-reviewer [git diff]` → code verdict
+8. Ship

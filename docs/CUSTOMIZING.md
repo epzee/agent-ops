@@ -9,14 +9,15 @@
 
 ## Add a check
 
-1. Choose cadence (daily, weekly, monthly).
-2. Add to `skills/maintenance-checks.md` under the right section.
-3. Label it `[tool-backed]` or `[heuristic]`.
+1. Create a markdown file in `maintenance/{category}/`.
+2. Add YAML frontmatter with `name` and `description`.
+3. Label checks `[tool-backed]` or `[heuristic]`.
 4. Define: what to run, what to report, what threshold flags it.
+5. Add the task to `maintenance/schedules.md` with cadence and rationale.
 
 ## Remove a check
 
-Delete the check from `skills/maintenance-checks.md`, or add it to
+Comment out the task line in `maintenance/schedules.md`, or add it to
 your project's CLAUDE.md under `## Health check overrides`:
 
 ```markdown

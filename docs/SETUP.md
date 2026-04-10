@@ -24,17 +24,15 @@ reviewer context requires isolated subagent sessions.
 3. **Configure commands.** Ensure your CLAUDE.md has test, typecheck,
    lint, and build commands that the verification gate can run.
 
-4. **Create plans directory.** `mkdir plans` in your project root.
-
-5. **Verify setup.** Run `@agent-ops-maintain run daily checks` to
-   confirm tools are accessible and thresholds are readable.
+4. **Verify setup.** Run `@agent-ops-refiner what does this project do`
+   to confirm the plugin is loaded and can read your project.
 
 ## Optional
 
 ### Scheduled tasks
 
-See [SCHEDULED-TASKS.md](SCHEDULED-TASKS.md) for daily/weekly/monthly
-automation via Cloud Scheduled Tasks, GitHub Actions, or cron.
+See [SCHEDULED-TASKS.md](SCHEDULED-TASKS.md) for weekly/monthly/quarterly
+automation via scheduled tasks, GitHub Actions, or cron.
 
 ### MCPs
 

@@ -26,7 +26,7 @@
    │
 4. Build         agent-ops              implements task by task
    │
-5. Simplify      /simplify              reuse, quality, efficiency review + fix
+5. Simplify      3 parallel agents      reuse, quality, efficiency review + fix
    │
 6. Verify        gate (enforced)        tests, types, lint, build
    │             ↻ fix & retry (max 3)

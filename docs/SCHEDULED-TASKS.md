@@ -9,11 +9,6 @@ Run maintenance checks automatically on a schedule.
 Use Claude Code's scheduled task feature to run maintenance agents
 on a cron schedule.
 
-Daily:
-```
-@agent-ops-maintain run daily checks
-```
-
 Weekly:
 ```
 @agent-ops-maintain run weekly checks
@@ -48,12 +43,12 @@ jobs:
 
 ## Recommended cadence
 
-| Check | Cadence | Time |
-|-------|---------|------|
-| CI status | Daily | ~2 min |
-| Deps, coverage, config, stale | Weekly | ~5 min |
-| Security, unused, dead code, docs | Monthly | ~15 min |
-| Error triage | Daily or on-demand | Varies |
+| Cadence | Tasks | Estimated time |
+|---------|-------|----------------|
+| Weekly | deps, vulns, secrets, coverage, lint, stale PRs, CLAUDE.md | ~15 min |
+| Monthly | complexity, dead code, TODOs, bundle, licenses, flaky, missing tests, errors, perf, deploys, skills, prompt drift, README, API docs, ecosystem, AI docs | ~30 min |
+| Quarterly | OWASP, best practices, changelog | ~45 min |
+| On-demand | Error triage | varies |
 
 ## MCPs for scheduled tasks
 

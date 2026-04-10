@@ -129,7 +129,7 @@ These are hard requirements, not suggestions. Do not skip them.
 4. **You MUST stop at both decision points (steps 4 and 9).**
    Do not continue past a decision point without explicit user approval.
 
-4. **Never implement code without following this pipeline.**
+5. **Never implement code without following this pipeline.**
    If you find yourself writing code without having run through these
    steps, stop and restart from the correct entry point.
 

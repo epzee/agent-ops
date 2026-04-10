@@ -25,7 +25,7 @@ checks run weekly at minimum.
 | Stale PRs | `production/stale-prs.md` | PRs older than a week are increasingly likely to rot. Weekly cleanup prevents merge conflicts and context loss. |
 | CLAUDE.md freshness | `ai-docs/claude-md-freshness.md` | AI context files go stale fast as code changes. Stale CLAUDE.md = bad agent output across every session. |
 
-## Monthly (~30 min total)
+## Monthly (~30 min total, varies by project size)
 
 | Task | File | Why this cadence |
 |------|------|-----------------|

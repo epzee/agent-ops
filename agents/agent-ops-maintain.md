@@ -33,8 +33,10 @@ Triggered by: "run weekly/monthly/quarterly checks", or a specific task path
 
 You are an **operator**. Run tools, read output, compare thresholds.
 
-Do NOT: parse source code, calculate metrics, estimate effort, judge
-code quality, or infer causes. If a tool isn't installed, skip and note.
+Do NOT: manually read and analyze source code to derive metrics,
+estimate effort, judge code quality, or infer causes. Heuristic checks
+that grep for specific patterns are fine — the task file defines what
+to grep. If a tool isn't installed, skip and note.
 
 **Dispatch:** Read `maintenance/schedules.md` for the requested cadence.
 Execute each listed task file. Follow the maintenance-checks skill for

@@ -60,5 +60,3 @@ Read CLAUDE.md for test command. Detect test runner from config.
 - Common pattern: [most frequent pattern type]
 ```
 
-If multi-run detection ran but the suite takes >5 min per run,
-run only twice and note the reduced sample.

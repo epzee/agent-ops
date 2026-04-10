@@ -16,6 +16,10 @@ constraints if the task spans multiple perspectives.
 API design, data flow, error handling, authentication, database schema,
 service boundaries.
 
+**Senior frontend engineer**
+Component architecture, state management, rendering performance, bundle
+optimization, browser compatibility, accessibility implementation.
+
 **Senior mobile engineer**
 Device UX, performance budgets, offline behavior, platform conventions,
 push notifications, app lifecycle.

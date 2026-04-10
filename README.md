@@ -1,13 +1,83 @@
 # agent-ops
 
-You make two decisions — approve the plan, approve the code. Everything
-else is autonomous: agents refine your idea, plan the work, build it,
-verify it passes, and review the code. You stay in control of what
-matters. The agents handle the rest.
+Autonomous software engineering pipeline for Claude Code. Agents
+refine, plan, build, verify, and review your code — you make two
+decisions: approve the plan and approve the code.
 
-Zero runtime dependencies. Pure markdown that works wherever your host
-tool runs. Designed for Claude Code; usable as system prompts in other
-tools. Stack-agnostic — configure your tools in CLAUDE.md.
+Zero runtime dependencies. Pure markdown that works wherever your
+host tool runs. Stack-agnostic — configure your tools in CLAUDE.md.
+
+## Usage
+
+| I want to... | Run |
+|--------------|-----|
+| Build a feature end-to-end | `@agent-ops add push notifications` |
+| Plan now, build later | `@agent-ops plan the auth migration` |
+| Implement an approved plan | `@agent-ops implement plans/2026-04-06-auth.md` |
+| Explore or refine an idea | `@agent-ops-refiner think through the API redesign` |
+| Review code independently | `@agent-ops-reviewer review my PR, be brutal` |
+| Run health checks | `@agent-ops-maintain run weekly checks` |
+| Triage production errors | `@agent-ops-maintain triage errors` |
+
+## Install
+
+### Prerequisites
+
+- [Claude Code](https://claude.ai/download) CLI or desktop app
+- A project with a CLAUDE.md file (the agents read it for configuration)
+
+### Quick start
+
+```bash
+# 1. Install the plugin
+claude plugin marketplace add https://github.com/epzee/agent-ops
+claude plugin install agent-ops
+
+# 2. Add agent-ops sections to your project's CLAUDE.md
+#    (copy from templates/CLAUDE-md-sections.md)
+
+# 3. Verify it works
+@agent-ops-refiner what does this project do
+```
+
+See [setup guide](docs/SETUP.md) for project configuration details.
+
+### Other tools
+
+Use the markdown body of any agent file as a system prompt.
+The autonomous pipeline requires subagent support. Independent
+reviewer context requires isolated subagent sessions.
+
+## How it works
+
+<!-- Flow: Input → Refine → Plan → Review plan → [Approve?] → Build → Simplify → Gate → [Pass?] → Review code → [Approve?] → Ship → Maintain → loops back -->
+```mermaid
+graph TD
+    Input[Your idea]
+
+    subgraph auto1 ["Define and Plan"]
+        Refine[Refine] --> Plan[Plan] --> ReviewPlan[Review plan]
+    end
+
+    Input --> Refine
+    ReviewPlan --> ApprovePlan{Approve plan?}
+    ApprovePlan -->|No| Refine
+    ApprovePlan -->|Yes| Build
+
+    subgraph auto2 ["Build and Verify"]
+        Build[Build] --> Simplify[Simplify] --> Gate[Verify gate]
+    end
+
+    Gate -->|Fail| Build
+    Gate -->|3 failures| Escalate[Escalate to you]
+    Gate -->|Pass| ReviewCode[Review code]
+    ReviewCode --> ApproveCode{Approve code?}
+    ApproveCode -->|No| Build
+    ApproveCode -->|Yes| Ship[Ship]
+
+    Ship --> Maintain[Maintain]
+    Maintain -.-> Input
+```
 
 ## What it looks like
 
@@ -77,82 +147,6 @@ You: ship it
   → Silence: analytics timeout, third-party noise
 ```
 
-## How it works
-
-<!-- Flow: Input → Refine → Plan → Review plan → [Approve?] → Build → Simplify → Gate → [Pass?] → Review code → [Approve?] → Ship → Maintain → loops back -->
-```mermaid
-graph TD
-    Input[Your idea]
-
-    subgraph auto1 ["Define and Plan"]
-        Refine[Refine] --> Plan[Plan] --> ReviewPlan[Review plan]
-    end
-
-    Input --> Refine
-    ReviewPlan --> ApprovePlan{Approve plan?}
-    ApprovePlan -->|No| Refine
-    ApprovePlan -->|Yes| Build
-
-    subgraph auto2 ["Build and Verify"]
-        Build[Build] --> Simplify[Simplify] --> Gate[Verify gate]
-    end
-
-    Gate -->|Fail| Build
-    Gate -->|3 failures| Escalate[Escalate to you]
-    Gate -->|Pass| ReviewCode[Review code]
-    ReviewCode --> ApproveCode{Approve code?}
-    ApproveCode -->|No| Build
-    ApproveCode -->|Yes| Ship[Ship]
-
-    Ship --> Maintain[Maintain]
-    Maintain -.-> Input
-```
-
-## Standalone agents
-
-Use `@agent-ops` for the full pipeline. Use standalone agents when
-you want just one phase:
-
-| Agent | Use when | Example |
-|-------|----------|---------|
-| `@agent-ops-refiner` | Exploring an idea before committing to a plan | `think through this API redesign` |
-| `@agent-ops-planner` | You already know what to build, need a structured plan | `plan the migration` |
-| `@agent-ops-reviewer` | You have code ready and want an independent review | `review my PR, be brutal` |
-| `@agent-ops-maintain` | Running health checks or triaging production errors | `triage errors` |
-
-## Install
-
-### Prerequisites
-
-- [Claude Code](https://claude.ai/download) CLI or desktop app
-- A project with a CLAUDE.md file (the agents read it for configuration)
-
-### Quick start
-
-```bash
-# 1. Install the plugin
-claude plugin marketplace add https://github.com/epzee/agent-ops
-claude plugin install agent-ops
-
-# 2. Add agent-ops sections to your project's CLAUDE.md
-#    Copy from templates/CLAUDE-md-sections.md — sets thresholds,
-#    maintenance commands, and monitoring config
-
-# 3. Create a plans directory
-mkdir plans
-
-# 4. Verify it works (health-reports/ is created automatically on first run)
-@agent-ops-maintain run weekly checks
-```
-
-See [setup guide](docs/SETUP.md) for project configuration details.
-
-### Other tools
-
-Use the markdown body of any agent file as a system prompt.
-The autonomous pipeline requires subagent support. Independent
-reviewer context requires isolated subagent sessions.
-
 ## Repo structure
 
 ```
@@ -160,12 +154,13 @@ agents/              5 agents — coordinator + 4 phase specialists
 skills/              5 skills — gate, review criteria, plan format,
                      maintenance checks, refiner roles
 workflows/           4 workflows — feature, plan-only, add-tests, template
-maintenance/         25 maintenance tasks organized by category:
+maintenance/         26 maintenance tasks organized by category:
   code-health/         complexity, dead code, TODOs, deps, bundle size
   security/            vulns, secrets, licenses, OWASP surface
   testing/             coverage, flaky tests, missing tests, lint drift
   production/          errors, perf, stale PRs, deploy frequency
-  ai-docs/             CLAUDE.md freshness, skills, prompt drift, ecosystem
+  ai-docs/             CLAUDE.md freshness, skills, prompt drift,
+                       best practices, ecosystem, AI docs review
   documentation/       README, API docs, changelog gaps
 templates/           CLAUDE.md sections to add to your project
 docs/                setup, customizing, scheduled tasks, philosophy
