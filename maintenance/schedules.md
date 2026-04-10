@@ -44,6 +44,7 @@ checks run weekly at minimum.
 | README staleness | `documentation/readme-staleness.md` | READMEs go stale after feature work, not daily. Monthly catches outdated install steps and dead links. |
 | API docs coverage | `documentation/api-docs-coverage.md` | New endpoints ship without docs regularly. Monthly catches the gaps before they become tribal knowledge. |
 | Ecosystem audit | `ai-docs/ecosystem-audit.md` | Tooling changes with dependency updates and new installations. Monthly catches unmet task dependencies and surfaces missing skills/MCPs before they cause silent failures. |
+| AI docs review | `ai-docs/ai-docs-review.md` | Agent prompts drift from codebase reality; monthly catches it before agents start failing silently. |
 
 ## Quarterly (~45 min total)
 
