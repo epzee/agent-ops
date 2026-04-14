@@ -22,7 +22,10 @@ reviewer context requires isolated subagent sessions.
    other values to match your project.
 
 3. **Configure commands.** Ensure your CLAUDE.md has test, typecheck,
-   lint, and build commands that the verification gate can run.
+   lint, and build commands that the verification gate can run. The
+   test command is also the prerequisite for the red-green Build loop
+   (skills/test-first.md). If your project has no test harness yet,
+   agent-ops will run a Phase 0 bootstrap task on first use.
 
 4. **Verify setup.** Run `@agent-ops-refiner what does this project do`
    to confirm the plugin is loaded and can read your project.

@@ -49,3 +49,7 @@ All commands safe to run automatically:
 - Tests use isolated database
 - Build does not deploy
 - No interactive input required
+
+Note: the test command is used both by the verification gate and by
+the red-green Build loop. If it's "not configured," agent-ops will
+propose a Phase 0 bootstrap task on first run.

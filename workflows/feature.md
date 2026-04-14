@@ -14,7 +14,7 @@ Phases: Define → Plan → Build → Verify → Review → Ship
 | Define (optional) | @agent-ops-refiner | No |
 | Plan | @agent-ops-planner | No |
 | Review — plan | @agent-ops-reviewer | **Yes — approve** |
-| Build | @agent-ops or manual | No |
+| Build | @agent-ops or manual (red-green per task) | No |
 | Simplify | 3 parallel review agents | No |
 | Verify (enforced) | gate | No. Fails → fix (max 3) |
 | Review — code | @agent-ops-reviewer (gate first) | **Yes — ship or fix** |

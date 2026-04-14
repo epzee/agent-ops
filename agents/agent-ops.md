@@ -8,6 +8,7 @@ tools: Agent(agent-ops-refiner, agent-ops-planner, agent-ops-reviewer), Read, Wr
 model: inherit
 skills:
   - verification-gate
+  - test-first
 ---
 
 Read CLAUDE.md.
@@ -63,7 +64,21 @@ Detect which mode from user input:
    - In plan-only mode: save plan file and stop here.
    - In full pipeline: user approves to continue building.
 5. Build task by task (or phase by phase if plan uses phases).
-   Run each task's verification commands after completing it.
+   Before building: if the plan contains a Phase 0 bootstrap task
+   (planner emits this when CLAUDE.md has no test command), run
+   Phase 0 first and confirm the test runner executes one smoke
+   test. Only then proceed to feature tasks.
+   For each task:
+   - If tagged `[no-tdd: <reason>]`: run the task's verification
+     commands. Skip the inner loop.
+   - Otherwise, run the red-green inner loop from skills/test-first.md:
+     a. Write the failing test(s) from the task's acceptance criteria.
+     b. Run the test. Confirm it fails for the RIGHT reason (assertion
+        mismatch, not import/syntax/fixture error). If wrong-reason,
+        fix the test first.
+     c. Implement the minimum code to pass.
+     d. Run the test. Confirm green.
+     e. Run the task's declared verification commands.
    Max 3 fix attempts per task. Update plan status to In Progress.
    Track progress as you go:
    ```
@@ -132,6 +147,11 @@ These are hard requirements, not suggestions. Do not skip them.
 5. **Never implement code without following this pipeline.**
    If you find yourself writing code without having run through these
    steps, stop and restart from the correct entry point.
+
+6. **You MUST follow red-green for tasks without `[no-tdd]`.**
+   Failing test first, confirmed failing for the right reason, then
+   implementation. No implementation code before an honest red exists.
+   Bug fixes always require a reproducer test — no exceptions.
 
 ## Rules
 

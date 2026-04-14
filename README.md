@@ -12,6 +12,7 @@ host tool runs. Stack-agnostic — configure your tools in CLAUDE.md.
 | I want to... | Run |
 |--------------|-----|
 | Build a feature end-to-end | `@agent-ops add push notifications` |
+| Fix a bug with a reproducer test | `@agent-ops fix [bug description]` |
 | Plan now, build later | `@agent-ops plan the auth migration` |
 | Implement an approved plan | `@agent-ops implement plans/2026-04-06-auth.md` |
 | Explore or refine an idea | `@agent-ops-refiner think through the API redesign` |
@@ -48,9 +49,45 @@ Use the markdown body of any agent file as a system prompt.
 The autonomous pipeline requires subagent support. Independent
 reviewer context requires isolated subagent sessions.
 
-## How it works
+## How agent-ops works
 
-<!-- Flow: Input → Refine → Plan → Review plan → [Approve?] → Build → Simplify → Gate → [Pass?] → Review code → [Approve?] → Ship → Maintain → loops back -->
+Five agents, six skills, one enforced pipeline. The coordinator runs
+end-to-end; the specialists handle individual phases when called directly.
+
+```
+┌─────────────────────────────────────────────────────┐
+│  agent-ops (coordinator)                            │
+│                                                     │
+│  ┌─ Entry points ──────────────────────────────┐    │
+│  │ full pipeline · plan-only · implement-plan  │    │
+│  └─────────────────────────────────────────────┘    │
+│                                                     │
+│  Skill discovery → load skills for current phase    │
+│  Pipeline        → refine · plan · build · verify   │
+│                    · simplify · review              │
+│  Red-green       → failing test first, per task     │
+│  Gate (enforced) → tests · typecheck · lint · build │
+│  Circuit breaker → 3 fails → escalate with context  │
+│  Decision points → 2 human approvals (plan, code)   │
+└─────────────────────────────────────────────────────┘
+```
+
+**Key design choices:**
+
+- **Gates are enforced, not advised.** Verification runs four commands
+  from your CLAUDE.md. "Override" is the only escape hatch and it stamps
+  the artifact so every downstream reviewer knows.
+- **Red-green by default.** Build tasks write a failing test first,
+  confirm it fails for the right reason, then implement. Carve-outs
+  (UI polish, config, migrations, docs) are explicit.
+- **Reviewers run in isolated contexts.** Independent review is a
+  structural fix for anchoring bias, not a process preference.
+- **Two decisions, not six.** Approve the plan, approve the code.
+  Everything in between is automated.
+
+<details>
+<summary><b>Pipeline flow diagram</b></summary>
+
 ```mermaid
 graph TD
     Input[Your idea]
@@ -65,7 +102,7 @@ graph TD
     ApprovePlan -->|Yes| Build
 
     subgraph auto2 ["Build and Verify"]
-        Build[Build] --> Simplify[Simplify] --> Gate[Verify gate]
+        Build[Build<br/>red → green per task] --> Simplify[Simplify] --> Gate[Verify gate]
     end
 
     Gate -->|Fail| Build
@@ -79,9 +116,12 @@ graph TD
     Maintain -.-> Input
 ```
 
-## What it looks like
+</details>
 
-### Full pipeline
+<details>
+<summary><b>Example runs</b></summary>
+
+**Full pipeline**
 
 ```mermaid
 sequenceDiagram
@@ -94,7 +134,7 @@ sequenceDiagram
     You->>agent-ops: ship it
 ```
 
-### Plan now, build later
+**Plan now, build later**
 
 ```mermaid
 sequenceDiagram
@@ -110,7 +150,39 @@ sequenceDiagram
     You->>agent-ops: ship it
 ```
 
-### Enforcement
+</details>
+
+## Agents
+
+Five agents: one coordinator plus four phase specialists. Call the
+coordinator for end-to-end runs, or call a specialist directly.
+
+| Agent | Role | Use When |
+|-------|------|----------|
+| [agent-ops](agents/agent-ops.md) | Coordinator — full Define → Plan → Build → Verify → Review pipeline | Building a feature end-to-end or implementing an approved plan |
+| [agent-ops-refiner](agents/agent-ops-refiner.md) | Define — shapes rough ideas into precise, role-specific prompts | You have a vague idea and want it structured before planning |
+| [agent-ops-planner](agents/agent-ops-planner.md) | Plan — creates structured plans with runnable verification steps | You have a clear prompt and need an executable task breakdown |
+| [agent-ops-reviewer](agents/agent-ops-reviewer.md) | Review — independent reviews of plans, code, or tests | You want a second opinion from a context-isolated reviewer |
+| [agent-ops-maintain](agents/agent-ops-maintain.md) | Maintain — hygiene checks and production error triage | Running weekly/monthly health checks or investigating errors |
+
+## Skills
+
+Skills are markdown files that agents load at runtime. They encode
+workflows, output contracts, and quality gates.
+
+| Phase | Skill | What It Does |
+|-------|-------|--------------|
+| Define | [refiner-roles](skills/refiner-roles.md) | Lookup table of engineering role perspectives for shaping ideas |
+| Plan | [plan-format](skills/plan-format.md) | Output template for plans: task structure, verification, scope |
+| Build | [test-first](skills/test-first.md) | Red-green loop: failing test first, confirm honest red, then green |
+| Verify | [verification-gate](skills/verification-gate.md) | Four enforced checks: tests, typecheck, lint, build |
+| Review | [review-criteria](skills/review-criteria.md) | Review type routing, intensity levels, and verdict output contract |
+| Maintain | [maintenance-checks](skills/maintenance-checks.md) | Dispatches scheduled maintenance tasks and error triage |
+
+Agents also discover skills from installed plugins at runtime — see
+[Works great with](#works-great-with).
+
+## Enforcement
 
 ```
 ▶ Running gate...
@@ -128,7 +200,7 @@ sequenceDiagram
 
 ```
 ├── agents/          5 agents — coordinator + 4 specialists
-├── skills/          5 skills — gate, review, plan format, maintenance, roles
+├── skills/          6 skills — gate, test-first, review, plan format, maintenance, roles
 ├── workflows/       4 workflows — feature, plan-only, add-tests, template
 ├── maintenance/     26 tasks by category
 │   ├── code-health/   complexity, dead code, TODOs, deps, bundle
@@ -141,17 +213,13 @@ sequenceDiagram
 └── docs/            setup, customizing, scheduled tasks, philosophy
 ```
 
-## Skill discovery
-
-Agents discover and load relevant skills at runtime from
-.claude/skills/, installed plugins, and skill packs.
-
-### Works great with
+## Works great with
 
 **[agent-skills](https://github.com/addyosmani/agent-skills)** —
 engineering skills for Define → Ship. Agents discover and use
-these automatically. Recommended but not required — the pipeline
-works standalone.
+these automatically at runtime, alongside any other installed
+plugin skills. Recommended but not required — the pipeline works
+standalone.
 
 ## Design
 

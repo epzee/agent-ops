@@ -77,6 +77,28 @@ unrelated to your change. The escape hatch requires the explicit word
 "override" and stamps the artifact so every downstream reviewer knows.
 The stamp persists — you can't quietly skip verification.
 
+## Why red-green
+
+Post-hoc tests catch regressions but miss three LLM failure modes.
+First, **drift**: the implementation diverges from the intent because
+the intent was never pinned as an executable spec. Second, **tautology
+tests**: tests written after code pass trivially because they encode
+what the code does, not what the task asks for. Third, **regressions
+without reproducers**: a bug fix lands without a failing test that
+would catch the bug coming back.
+
+Red-green solves all three by forcing the acceptance criteria into a
+failing test before any implementation exists. The builder confirms
+the test fails for the right reason (assertion mismatch, not import
+error), then writes the minimum code to pass. Carve-outs (UI polish,
+config, migrations, docs) are named explicitly so the default is
+"test-first" rather than "test-first when convenient." See
+skills/test-first.md.
+
+Codebases with no test harness get a Phase 0 bootstrap task — install
+the runner, wire CLAUDE.md, add one smoke test — before any feature
+work. Bootstrap once, then red-green forever.
+
 ## Why independent reviewers
 
 When a reviewer sees the builder's reasoning, they anchor to it. They
