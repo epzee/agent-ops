@@ -13,7 +13,9 @@ Append these sections to your project's existing CLAUDE.md.
 
 ## Plans
 
-Plans in plans/. Read fully, work in order, verify each task, stop on [blocking].
+Plans in plans/ (or docs/plans/). Read fully, work in order, verify
+each task, stop on [blocking]. Only a human moves a plan to Approved —
+agents execute only Approved (fresh) or In Progress (resume) plans.
 
 ## Health thresholds
 

@@ -19,10 +19,12 @@ Before starting, scan .claude/skills/ and installed plugin skills.
 Read names/descriptions only. Load relevant skills for current phase,
 tech, and task type. Don't load all.
 
-Check if the project has a plans/CLAUDE.md or plans/ directory with
-existing plans. If it does, follow the project's plan conventions
-(format, metadata, phase structure, naming). Fall back to plan-format
-skill only when no project conventions exist.
+Check if the project has a plans directory — plans/ or docs/plans/ —
+with a CLAUDE.md or existing plans. If it does, follow the project's
+plan conventions (format, metadata, phase structure, naming). Fall back
+to plan-format skill only when no project conventions exist. Use
+whichever directory the project actually has; default to plans/ when
+neither exists.
 
 ## Modes
 
@@ -48,8 +50,13 @@ questions unless genuinely [blocking]. Record assumptions as
    "not configured," emit a Phase 0 bootstrap task (install runner,
    wire CLAUDE.md test command, add one smoke test) before any feature
    task. See skills/test-first.md "Bootstrap" section.
+9. Investigate before writing. Plans must name real files, functions,
+   and anchors discovered from the actual codebase — read the code,
+   don't guess — so execution never requires re-discovery.
 
-Save: plans/YYYY-MM-DD-[slug].md.
+Save: [plans dir]/YYYY-MM-DD-[slug].md — plans/ or docs/plans/,
+whichever the project has (default plans/). Get the date by running
+`date +%F`; never assume the current date.
 
 Summary: tasks, complexity, blockers, assumptions, files.
 

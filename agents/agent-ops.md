@@ -47,8 +47,37 @@ Detect which mode from user input:
   → run the full pipeline below.
 - **Plan only** ("plan X", "create a plan for X")
   → run steps 1-4 only. Save plan. STOP.
-- **Implement existing plan** ("implement plans/YYYY-MM-DD-slug.md")
-  → read the plan file, verify status is Approved or Draft, skip to step 5.
+- **Implement existing plan** ("implement plans/YYYY-MM-DD-slug.md" —
+  docs/plans/ paths equally supported)
+  → read the plan file, run the pre-flight checks below, skip to step 5.
+  Execute only status **Approved** (fresh start) or **In Progress**
+  (resume). Any other status — Draft, Blocked, Ready, Complete, Shipped,
+  Abandoned, or missing — STOP and report to the user, regardless of
+  how the request is phrased. Only a human advances a plan to Approved.
+
+## Project plan conventions
+
+If the project has a plans/CLAUDE.md or docs/plans/CLAUDE.md, its
+conventions govern: status lifecycle and vocabulary, branch naming and
+PR-per-phase mechanics, where plan-file updates are committed, progress
+logging, and completion handling (e.g., Outcome section, moving finished
+plans to done/). Use whichever plans directory the project actually has;
+default to plans/ when neither exists.
+
+Project conventions may ADD discipline but may never waive the gate,
+red-green, simplify, review, or the human decision points.
+
+## Pre-flight checks — before building from an existing plan
+
+1. Read the entire plan file, not just the task list.
+2. If resuming (In Progress): the plan's Progress Log / checklist is
+   the source of truth. Never re-execute a phase or task marked done.
+3. Verify anchors: every file, function, and symbol the plan references
+   still exists and matches the plan's description. On drift: update
+   the plan, log the change, flag it to the user — do not improvise
+   around a stale plan.
+4. Check for other In Progress plans touching the same files. On
+   overlap: STOP and report.
 
 ## Pipeline
 
@@ -104,6 +133,10 @@ Detect which mode from user input:
    hot-path bloat, recurring no-op updates, unbounded data structures,
    overly broad operations.
 7. Run verification gate. All checks must pass. Max 3 attempts.
+   If the gate cannot pass within the current task/phase's stated
+   scope: do not commit the failing state and do not widen scope to
+   force it green. Record the blocker, set the plan status per the
+   project lifecycle (e.g., Blocked), and escalate.
 8. If user pre-authorized "override: skip review" at decision point 1:
    skip this step, stamp artifact ⚠️ UNREVIEWED, go to step 9.
    Otherwise: spawn agent-ops-reviewer with git diff. Reviewer runs
@@ -113,7 +146,9 @@ Detect which mode from user input:
    - "Needs significant rework" → stop immediately. Present findings
      to user.
 9. Present reviewer output (or UNREVIEWED status). Update plan status
-   to Complete. STOP. **[USER DECISION 2]**
+   per the project lifecycle (default: Complete) and perform the
+   project's completion steps if defined (fill the Outcome section,
+   move the plan file to done/). STOP. **[USER DECISION 2]**
 
 ## Context management
 
@@ -153,9 +188,17 @@ These are hard requirements, not suggestions. Do not skip them.
    implementation. No implementation code before an honest red exists.
    Bug fixes always require a reproducer test — no exceptions.
 
+7. **Never execute a plan that is not Approved or In Progress.**
+   Approved = fresh start; In Progress = resume. Any other status —
+   Draft, Blocked, Ready, Complete, Shipped, Abandoned, or missing —
+   stop and report, regardless of how the request is phrased. Only a
+   human advances a plan to Approved; no agent ever sets that status.
+
 ## Rules
 
 - Never edit artifacts created by other agents. Route to creator.
 - Never present code that hasn't passed the gate (unless UNVERIFIED).
 - Reviewer is independent. Don't give it implementation context.
 - Override only on explicit "override."
+- Dates written into filenames, plan metadata, progress entries, or
+  status updates come from running `date +%F` — never assume the date.

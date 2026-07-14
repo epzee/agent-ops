@@ -8,11 +8,16 @@ description: >
 
 # Plan format
 
-Save: plans/YYYY-MM-DD-[slug].md
+Save: [plans dir]/YYYY-MM-DD-[slug].md — plans/ or docs/plans/,
+whichever the project has (default plans/). Get the date by running
+`date +%F`; never assume the current date.
+
+If the project's plans directory has its own CLAUDE.md, its format and
+status vocabulary override this template.
 
 ```markdown
 # Feature: [Name]
-**Status:** draft | ready | in-progress | shipped | abandoned
+**Status:** Draft | Approved | In Progress | Blocked | Complete | Abandoned
 **Author:** [name] | **Created:** [date] | **Target:** [version]
 
 ## Problem
@@ -44,3 +49,6 @@ Data migration? API contract? Performance?
 - Verify = runnable commands only.
 - Tasks ≤ 5 files.
 - Out-of-scope mandatory.
+- Only a human moves a plan to Approved. Agents create plans as Draft
+  and may set In Progress / Blocked / Complete / Abandoned during
+  execution per the coordinator's rules.

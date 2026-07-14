@@ -29,6 +29,13 @@ After 3 consecutive failures → escalate to user with:
 - Error output from each attempt
 - What was tried
 
+## Scope discipline
+
+If the gate cannot pass within the current task/phase's stated scope,
+do not commit the failing state and do not expand scope to force it
+green. Record the blocker, set the plan's status per the project
+lifecycle (e.g., Blocked), and escalate.
+
 ## Enforcement
 
 **Strict (default):** gate is non-waivable. If asked to skip, explain

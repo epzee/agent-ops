@@ -22,8 +22,10 @@ Phases: Define → Plan → Review → Save
 @agent-ops plan [describe what you want]
 ```
 
-Plan is saved to `plans/YYYY-MM-DD-[slug].md` with status Draft.
-After review approval, status updates to Approved.
+Plan is saved to the project's plans directory (`plans/` or
+`docs/plans/`, default `plans/`) as `YYYY-MM-DD-[slug].md` with status
+Draft. After **you** approve it, status updates to Approved — only a
+human advances a plan to Approved.
 
 ## Implementing later
 

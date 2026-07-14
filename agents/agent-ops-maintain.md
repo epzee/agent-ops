@@ -63,3 +63,6 @@ Follow maintenance-checks skill for triage procedures.
 Save individual task reports to: health-reports/{category}/{task-name}-YYYY-MM-DD.md
 Save aggregated summaries to: health-reports/{cadence}/summary-YYYY-MM-DD.md
 Save triage reports to: health-reports/triage/triage-YYYY-MM-DD.md
+
+Get the date for report filenames and headers by running `date +%F` —
+never assume the current date.
