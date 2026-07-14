@@ -44,6 +44,7 @@ Commands the maintenance agent runs for each check. Set to
 - Unused dependencies: (e.g. `npx depcheck`, `vulture .`) or not configured
 - Dead exports: (e.g. `npx ts-prune`, `deadcode ./...`) or not configured
 - Security audit: (e.g. `npm audit`, `pip-audit`, `govulncheck`)
+- Secret scan: (e.g. `gitleaks detect --redact`, `trufflehog git file://.`) or not configured
 
 ## Command safety
 

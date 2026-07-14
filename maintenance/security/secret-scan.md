@@ -10,7 +10,18 @@ description: >
 
 ## What to check
 
-### Pattern scan [heuristic]
+### Dedicated scanner [tool-backed] — preferred
+
+- Read CLAUDE.md `## Maintenance commands` for a secret scan command
+  (e.g. `gitleaks detect --no-banner --redact`,
+  `trufflehog git file://. --only-verified`).
+- If configured — or a scanner is installed (`which gitleaks`,
+  `which trufflehog`) — run it and report its findings directly,
+  including git-history hits (gitleaks scans history by default).
+- When the scanner runs, skip the pattern scan below; run env file
+  hygiene either way.
+
+### Pattern scan [heuristic] — fallback when no scanner is available
 - Grep for common secret patterns in source files:
   - API keys: `AKIA[0-9A-Z]{16}`, `sk-[a-zA-Z0-9]{20,}`
   - Tokens: `ghp_`, `gho_`, `github_pat_`, `xoxb-`, `xoxp-`

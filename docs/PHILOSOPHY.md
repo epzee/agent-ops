@@ -16,15 +16,15 @@
 ### Step by step
 
 ```
-1. Define        agent-ops-refiner      shapes your idea
+1. Define        refine skill (fork)    shapes your idea
    │
-2. Plan          agent-ops-planner      creates structured plan
+2. Plan          planner skill (fork)   creates structured plan
    │
 3. Review plan   agent-ops-reviewer     reviews plan
    │
    ◆ YOU APPROVE THE PLAN
    │
-4. Build         agent-ops              implements task by task
+4. Build         pipeline (main thread) implements task by task
    │
 5. Simplify      3 parallel agents      reuse, quality, efficiency review + fix
    │
@@ -45,9 +45,32 @@
 
 Plain markdown files, no runtime. The host tool (Claude Code or another
 LLM tool) is the engine. agent-ops provides structure: which phases
-exist, what each agent does, what gates must pass, when humans decide.
-This means zero dependencies, instant uninstall, and portability
-across tools.
+exist, what each skill and agent does, what gates must pass, when
+humans decide. This means zero dependencies, instant uninstall, and
+portability across tools.
+
+## Why skills by default, agents for isolation
+
+A skill is instructions plus an invocation surface; an agent is a
+separate execution context. The pipeline is a skill because its two
+human decision points must live in the main conversation — a subagent
+cannot pause to ask you anything. The reviewer is an agent because
+isolation from the builder's reasoning is the feature. The maintainer
+is an agent because scheduled runs produce mountains of tool output
+that should never pollute your conversation. Nothing else needs an
+agent, so nothing else is one.
+
+## agent-ops and native Claude Code features
+
+Claude Code ships plan mode, `/code-review`, simplify- and
+verify-style skills. These overlap individual phases, and agent-ops
+uses the same primitives (skills, subagents, hooks) rather than
+fighting them. What agent-ops adds is the connective tissue: an
+enforced end-to-end sequence, plan files that persist and resume
+across sessions with a status lifecycle, red-green as the default
+build discipline, and the maintenance layer nothing native covers.
+Use native features freely inside phases — the pipeline defines what
+must happen in what order, with proof.
 
 ## Why Maintain
 
@@ -77,6 +100,11 @@ unrelated to your change. The escape hatch requires the explicit word
 "override" and stamps the artifact so every downstream reviewer knows.
 The stamp persists — you can't quietly skip verification.
 
+Since prompts alone drift on long runs, a Stop hook backs the gate:
+the harness itself blocks ending a pipeline turn on a failing gate
+without an override stamp. Instructions state the contract; the hook
+enforces it.
+
 ## Why red-green
 
 Post-hoc tests catch regressions but miss three LLM failure modes.
@@ -93,7 +121,7 @@ the test fails for the right reason (assertion mismatch, not import
 error), then writes the minimum code to pass. Carve-outs (UI polish,
 config, migrations, docs) are named explicitly so the default is
 "test-first" rather than "test-first when convenient." See
-skills/test-first.md.
+the test-first skill.
 
 Codebases with no test harness get a Phase 0 bootstrap task — install
 the runner, wire CLAUDE.md, add one smoke test — before any feature

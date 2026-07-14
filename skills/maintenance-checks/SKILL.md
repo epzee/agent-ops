@@ -6,6 +6,7 @@ description: >
   appropriate task files for the requested cadence. Triage mode
   investigates production errors. Use when running health checks or
   triaging errors.
+user-invocable: false
 ---
 
 Two modes: **SCHEDULED CHECKS** (maintenance, operator) and
@@ -20,8 +21,11 @@ Two modes: **SCHEDULED CHECKS** (maintenance, operator) and
 0. Read the project's CLAUDE.md once — extract `## Maintenance commands`
    and `## Health thresholds`. Task files reference these sections;
    having them loaded avoids re-reading per task.
-1. Read `maintenance/schedules.md` to determine which tasks belong to
-   the requested cadence (weekly, monthly, quarterly).
+1. Read `schedules.md` from the agent-ops plugin's maintenance/
+   directory to determine which tasks belong to the requested cadence
+   (weekly, monthly, quarterly). Resolve it relative to this skill
+   file: `../../maintenance/schedules.md` from this SKILL.md. In a
+   checkout of agent-ops itself, that's `maintenance/schedules.md`.
 2. For each task in that cadence, read its `.md` file from the
    `maintenance/` subdirectory.
 3. Execute the task as written — follow its setup, checks, and report

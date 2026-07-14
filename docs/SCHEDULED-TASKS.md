@@ -2,24 +2,24 @@
 
 Run maintenance checks automatically on a schedule.
 
-## Options
+## Options (in order of recommendation)
 
-### Cloud Scheduled Tasks (Claude Code)
+### 1. Claude Code routines (recommended)
 
-Use Claude Code's scheduled task feature to run maintenance agents
-on a cron schedule.
+Create a scheduled cloud agent with `/schedule` (or the desktop app):
 
-Weekly:
 ```
-@agent-ops-maintain run weekly checks
-```
-
-Monthly:
-```
-@agent-ops-maintain run monthly checks
+/schedule weekly "/agent-ops:maintain run weekly checks"
+/schedule monthly "/agent-ops:maintain run monthly checks"
 ```
 
-### GitHub Actions
+Routines run on Anthropic infrastructure in their own session against
+your repo — no CI wiring or cron host needed.
+
+### 2. GitHub Actions
+
+Use the official action; headless prompts go through it rather than a
+raw `claude` call:
 
 ```yaml
 name: Weekly maintenance
@@ -29,16 +29,35 @@ on:
 jobs:
   maintain:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
-      - run: claude "@agent-ops-maintain run weekly checks"
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: "/agent-ops:maintain run weekly checks"
 ```
 
-### Cron
+Reports land in `health-reports/` in the workspace; add a step to
+commit them or upload as an artifact if you want them persisted.
+
+### 3. Cron
+
+Headless mode requires the `-p` flag:
 
 ```bash
 # Weekly on Monday at 9am
-0 9 * * 1 cd /path/to/project && claude "@agent-ops-maintain run weekly checks"
+0 9 * * 1 cd /path/to/project && claude -p "/agent-ops:maintain run weekly checks"
+```
+
+### In-session: /loop
+
+For continuous feedback during long refactors, run a single check on
+an interval inside an active session:
+
+```
+/loop 30m /agent-ops:maintain run maintenance/testing/coverage-trend.md
 ```
 
 ## Recommended cadence
@@ -57,9 +76,12 @@ jobs:
 - **GitHub:** Enables CI status and stale PR checks.
 - **Analytics (PostHog):** Optional, for usage-related insights.
 
+Note: interactively-authenticated MCP servers may be unavailable in
+headless or scheduled runs — tasks that need them skip and note it.
+
 ## Tips
 
-- Start with weekly. Add daily/monthly as you see value.
+- Start with weekly. Add monthly as you see value.
 - Review reports in health-reports/ after each run.
 - Adjust thresholds in CLAUDE.md as your project matures.
 - Error triage is most valuable run daily or triggered by alerts.

@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "You are validating the end of a turn in a session with the agent-ops plugin. If this conversation is NOT inside an active agent-ops pipeline run (/agent-ops:build, /agent-ops:plan, or /agent-ops:implement currently in progress), approve stopping. If it IS: block stopping when (a) the build phase finished but the verification gate (tests, typecheck, lint, build — commands from the project CLAUDE.md) was not run to a pass and no explicit override stamp (⚠️ UNVERIFIED / ⚠️ UNREVIEWED / ⚠️ REVIEWER OVERRIDDEN) was recorded, or (b) the turn ends mid-task without the plan's Progress Log / progress checklist being updated. Stopping at the pipeline's two human decision points is always allowed — that is the pipeline working as designed. When blocking, state exactly which requirement is unmet."
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "agent-ops-reviewer",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Validate the reviewer's final output against the agent-ops verdict contract. It must be either (a) a review: exactly one line 'Verdict: X' where X is exactly one of 'Ready to implement', 'Ship it', 'Needs revision', 'Needs significant rework' — no qualifiers — plus 'Blocking findings: [count]' and 'Non-blocking suggestions: [count]' sections; or (b) a gate failure notice starting 'Gate status: FAILED' (which is not a verdict). If the output conforms, approve. If not, block and state exactly which part of the contract is violated so the reviewer can correct it."
+          }
+        ]
+      }
+    ]
+  }
+}

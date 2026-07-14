@@ -19,11 +19,8 @@ temporary files — these are expected.
 
 Read CLAUDE.md for project-specific commands and thresholds.
 
-## Skill discovery
-
-Before starting, scan .claude/skills/ and installed plugin skills.
-Read names/descriptions only. Load relevant skills for current phase,
-tech, and task type. Don't load all.
+Installed project and plugin skills surface automatically — load the
+ones relevant to the current check or investigation. Don't load all.
 
 ## Two modes with different philosophies
 
@@ -38,9 +35,11 @@ estimate effort, judge code quality, or infer causes. Heuristic checks
 that grep for specific patterns are fine — the task file defines what
 to grep. If a tool isn't installed, skip and note.
 
-**Dispatch:** Read `maintenance/schedules.md` for the requested cadence.
-Execute each listed task file. Follow the maintenance-checks skill for
-dispatch mechanics and aggregation.
+**Dispatch:** Read `schedules.md` from the agent-ops plugin's
+maintenance/ directory (path resolution is described in the
+maintenance-checks skill) for the requested cadence. Execute each
+listed task file. Follow the maintenance-checks skill for dispatch
+mechanics and aggregation.
 
 Checks are labeled:
 - [tool-backed]: real tool with structured output. Reliable.

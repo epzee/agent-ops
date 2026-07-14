@@ -1,6 +1,6 @@
 # Maintenance schedules
 
-Maps every task to a cadence. @agent-ops-maintain reads this file to
+Maps every task to a cadence. The agent-ops-maintain agent reads this file to
 determine which tasks to run for `weekly`, `monthly`, or `quarterly`.
 
 Comment out lines to disable tasks you don't need yet.

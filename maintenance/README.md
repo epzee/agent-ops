@@ -1,13 +1,13 @@
 # Maintenance tasks
 
-Scheduled hygiene checks for @agent-ops-maintain. Each file in this
+Scheduled hygiene checks for /agent-ops:maintain. Each file in this
 directory is a prompt that the maintenance agent executes against a
 target project.
 
-<!-- Flow: @agent-ops-maintain → schedules.md → weekly/monthly/quarterly tasks → task reports (critical/warning/info) → summary table; or triage errors → triage report → health-reports/ -->
+<!-- Flow: /agent-ops:maintain → schedules.md → weekly/monthly/quarterly tasks → task reports (critical/warning/info) → summary table; or triage errors → triage report → health-reports/ -->
 ```mermaid
 graph TD
-    Agent["@agent-ops-maintain"]
+    Agent["/agent-ops:maintain"]
 
     Agent -->|Scheduled checks| Schedules[schedules.md]
     Agent -->|Triage errors| Investigate[Investigate]
@@ -80,15 +80,15 @@ desktop app. Each runs in its own session against a target project.
 Cadence-based runs use `schedules.md` to determine which tasks to execute:
 
 ```
-@agent-ops-maintain run weekly checks
-@agent-ops-maintain run monthly checks
-@agent-ops-maintain run quarterly checks
+/agent-ops:maintain run weekly checks
+/agent-ops:maintain run monthly checks
+/agent-ops:maintain run quarterly checks
 ```
 
 Or run a single task by path:
 
 ```
-@agent-ops-maintain run maintenance/code-health/dependency-freshness.md
+/agent-ops:maintain run maintenance/code-health/dependency-freshness.md
 ```
 
 ### CLI /loop for in-session use
@@ -96,7 +96,7 @@ Or run a single task by path:
 Run a check on a recurring interval during an active session:
 
 ```
-/loop 30m @agent-ops-maintain run maintenance/testing/coverage-trend.md
+/loop 30m /agent-ops:maintain run maintenance/testing/coverage-trend.md
 ```
 
 Useful during long refactors or migration work where you want
@@ -107,7 +107,7 @@ continuous feedback.
 Run any task directly:
 
 ```
-@agent-ops-maintain run maintenance/security/secret-scan.md
+/agent-ops:maintain run maintenance/security/secret-scan.md
 ```
 
 ## Adding new tasks

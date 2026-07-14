@@ -1,0 +1,76 @@
+name: Validate plugin
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate JSON manifests
+        run: |
+          for f in .claude-plugin/plugin.json .claude-plugin/marketplace.json hooks/hooks.json; do
+            jq empty "$f" || { echo "Invalid JSON: $f"; exit 1; }
+          done
+          jq -e '.name and .version and .description' .claude-plugin/plugin.json > /dev/null
+          jq -e '.name and (.plugins | length > 0)' .claude-plugin/marketplace.json > /dev/null
+
+      - name: Validate skill and agent frontmatter
+        run: |
+          python3 - <<'EOF'
+          import re, sys, pathlib
+
+          errors = []
+
+          def check(path, require_name_match=None):
+              text = path.read_text()
+              m = re.match(r"^---\n(.*?)\n---\n", text, re.DOTALL)
+              if not m:
+                  errors.append(f"{path}: missing YAML frontmatter")
+                  return
+              fm = m.group(1)
+              name = re.search(r"^name:\s*(\S+)\s*$", fm, re.MULTILINE)
+              if not name:
+                  errors.append(f"{path}: missing name")
+              else:
+                  n = name.group(1)
+                  if not re.fullmatch(r"[a-z0-9-]{1,64}", n):
+                      errors.append(f"{path}: name '{n}' not kebab-case <=64 chars")
+                  if require_name_match and n != require_name_match:
+                      errors.append(f"{path}: name '{n}' != directory '{require_name_match}'")
+              if "description:" not in fm:
+                  errors.append(f"{path}: missing description")
+
+          for skill in pathlib.Path("skills").iterdir():
+              if not skill.is_dir():
+                  errors.append(f"{skill}: skills/ entries must be directories")
+                  continue
+              sk = skill / "SKILL.md"
+              if not sk.exists():
+                  errors.append(f"{skill}: missing SKILL.md")
+                  continue
+              check(sk, require_name_match=skill.name)
+
+          for agent in pathlib.Path("agents").glob("*.md"):
+              check(agent)
+              if not agent.name.startswith("agent-ops-"):
+                  errors.append(f"{agent}: agent files must be prefixed agent-ops-")
+
+          for task in pathlib.Path("maintenance").glob("*/*.md"):
+              check(task)
+
+          if errors:
+              print("\n".join(errors))
+              sys.exit(1)
+          print("Frontmatter OK")
+          EOF
+
+      - name: Check internal links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --offline --no-progress --include-fragments "**/*.md"
+          fail: true

@@ -3,6 +3,7 @@ name: refiner-roles
 description: >
   Lookup table of engineering role perspectives for shaping ideas into
   precise prompts. Use when refining rough ideas in the Define phase.
+user-invocable: false
 ---
 
 # Refiner roles

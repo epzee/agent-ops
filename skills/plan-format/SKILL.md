@@ -4,6 +4,7 @@ description: >
   Defines the output template for feature plans including task structure,
   verification steps, and scope sections. Use when creating plans for
   features, tests, refactors, or any structured engineering work.
+user-invocable: false
 ---
 
 # Plan format

@@ -67,8 +67,8 @@ Bootstrap once, then red-green forever.
 
 ## Deeper methodology
 
-If the `agent-skills:test-driven-development` plugin skill is available
-(discovered at runtime per the agent's "Skill discovery" section), load
-it for non-trivial tasks — it carries the full red-green rubric and the
+If the `agent-skills:test-driven-development` plugin skill is
+installed (skills surface automatically at runtime), load it for
+non-trivial tasks — it carries the full red-green rubric and the
 Prove-It bug pattern. This bundled skill is the floor; the plugin is
 the depth.

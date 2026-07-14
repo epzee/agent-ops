@@ -4,6 +4,7 @@ description: >
   Routing logic for review type (plan, code, test), intensity levels
   (quick, thorough, brutal), and the verdict output contract. Use when
   performing independent reviews of any engineering artifact.
+user-invocable: false
 ---
 
 # Review criteria

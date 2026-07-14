@@ -36,19 +36,23 @@ do not commit the failing state and do not expand scope to force it
 green. Record the blocker, set the plan's status per the project
 lifecycle (e.g., Blocked), and escalate.
 
-## Enforcement
+## Enforcement and override stamps
 
-**Strict (default):** gate is non-waivable. If asked to skip, explain
-why and do not comply unless user explicitly says "override."
+**Strict (default):** the gate and the reviewer are non-waivable. If
+asked to skip either, explain why and do not comply unless the user
+explicitly says "override."
 
-**Override:** if user says "override," stamp the artifact:
+**Override:** if the user says "override," stamp the artifact:
 
-```
-⚠️ UNVERIFIED — gate skipped: [list of checks not run]
-```
+- Gate skipped → `⚠️ UNVERIFIED — gate skipped: [checks not run]`
+- Reviewer findings overridden → `⚠️ REVIEWER OVERRIDDEN — findings
+  ignored: [list]`
+- Review skipped entirely → `⚠️ UNREVIEWED — no review performed`
 
-Stamp persists in subsequent artifacts. Any later reviewer must
-account for it in their assessment.
+Stamps persist in subsequent artifacts. Any later reviewer must
+account for them in its assessment. This section is the single source
+of truth for the override protocol — agents and skills reference it
+rather than restating it.
 
 ## Gate failure vs reviewer verdict
 

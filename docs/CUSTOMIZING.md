@@ -40,24 +40,43 @@ Maintenance checks read commands from your project's CLAUDE.md under
 Set any check to "not configured" to skip it. The check structure
 (run tool → read output → compare threshold) is universal.
 
-## Add a workflow
+## Add an entry-point skill
 
-1. Copy `workflows/_template.md`.
-2. Define phases, agents, gates, and human decision points.
-3. Follow the pattern: each phase names the agent, gate requirement,
-   and whether human approval is needed.
+1. Create `skills/[name]/SKILL.md` with `name` and `description`
+   frontmatter. It becomes `/agent-ops:[name]`.
+2. Thin wrappers beat restated logic: load the pipeline skill (or
+   another contract skill) and state only what differs.
+3. Skills that shouldn't appear in the slash menu get
+   `user-invocable: false`; skills that should run outside the main
+   context get `context: fork`.
 
 ## Add a role
 
-Add to `skills/refiner-roles.md`. One entry: role name, 1-2 sentences
-describing what that perspective focuses on.
+Add to `skills/refiner-roles/SKILL.md`. One entry: role name, 1-2
+sentences describing what that perspective focuses on.
 
 ## Add an agent
 
+Write a skill by default — see the heuristic in
+[CONTRIBUTING.md](../CONTRIBUTING.md). If the work genuinely needs an
+isolated context (independent judgment, heavy output, background
+runs):
+
 1. Create `agents/agent-ops-[name].md`.
 2. Include frontmatter: name, description, tools, model, skills.
-3. Include skill discovery section in the system prompt.
-4. Add `agent-ops-` prefix to the name.
+3. Reference contract skills rather than restating them.
+
+## Model routing
+
+Everything defaults to `model: inherit`. Two overrides worth making:
+
+- **Mechanical work cheaper:** maintenance operator runs (run tool →
+  read output → compare threshold) work fine on a fast model — set
+  `model: haiku` on agent-ops-maintain if your maintenance runs are
+  mostly tool-backed checks. Keep `inherit` if you rely on triage
+  mode, which is investigative.
+- **Judgment stays strong:** leave the reviewer on `inherit` (or pin
+  your strongest model) — verdicts are where model quality shows.
 
 ## Evolving checks
 

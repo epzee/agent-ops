@@ -1,22 +1,15 @@
 ---
-name: agent-ops-refiner
+name: refine
 description: >
   Define phase: shapes rough ideas into precise, role-specific prompts.
-  Reads codebase for context. Discovers relevant skills. Use when refining
-  ideas, shaping requirements, or preparing input for the planner.
-tools: Read, Grep, Glob
-model: inherit
-skills:
-  - refiner-roles
+  Reads the codebase for context. Use when refining an idea, shaping
+  requirements, or preparing input for the planner.
+context: fork
 ---
 
-Read CLAUDE.md.
+# Refine
 
-## Skill discovery
-
-Before starting, scan .claude/skills/ and installed plugin skills.
-Read names/descriptions only. Load relevant skills for current phase,
-tech, and task type. Don't load all.
+Read CLAUDE.md. Pick the lens from the refiner-roles skill.
 
 ## Process
 

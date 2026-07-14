@@ -1,31 +1,32 @@
 # agent-ops
 
-Autonomous software engineering pipeline for Claude Code. Agents
-refine, plan, build, verify, and review your code — you make two
+Autonomous software engineering pipeline for Claude Code. The pipeline
+refines, plans, builds, verifies, and reviews your code — you make two
 decisions: approve the plan and approve the code.
 
-Zero runtime dependencies. Pure markdown that works wherever your
-host tool runs. Stack-agnostic — configure your tools in CLAUDE.md.
+Zero runtime dependencies. Pure markdown plus two declarative hooks.
+Stack-agnostic — configure your tools in CLAUDE.md.
 
 ## Usage
 
 | I want to... | Run |
 |--------------|-----|
-| Build a feature end-to-end | `@agent-ops add push notifications` |
-| Fix a bug with a reproducer test | `@agent-ops fix [bug description]` |
-| Plan now, build later | `@agent-ops plan the auth migration` |
-| Implement an approved plan | `@agent-ops implement plans/2026-04-06-auth.md` |
-| Explore or refine an idea | `@agent-ops-refiner think through the API redesign` |
-| Review code independently | `@agent-ops-reviewer review my PR, be brutal` |
-| Run health checks | `@agent-ops-maintain run weekly checks` |
-| Triage production errors | `@agent-ops-maintain triage errors` |
+| Build a feature end-to-end | `/agent-ops:build add push notifications` |
+| Fix a bug with a reproducer test | `/agent-ops:build fix [bug description]` |
+| Plan now, build later | `/agent-ops:plan the auth migration` |
+| Implement an approved plan | `/agent-ops:implement plans/2026-04-06-auth.md` |
+| Explore or refine an idea | `/agent-ops:refine think through the API redesign` |
+| Review code independently | `/agent-ops:review my PR, be brutal` |
+| Run the verification gate | `/agent-ops:verification-gate` |
+| Run health checks | `/agent-ops:maintain run weekly checks` |
+| Triage production errors | `/agent-ops:maintain triage errors` |
 
 ## Install
 
 ### Prerequisites
 
-- [Claude Code](https://claude.ai/download) CLI or desktop app
-- A project with a CLAUDE.md file (the agents read it for configuration)
+- [Claude Code](https://code.claude.com) CLI or desktop app
+- A project with a CLAUDE.md file (the pipeline reads it for configuration)
 
 ### Quick start
 
@@ -38,35 +39,35 @@ claude plugin install agent-ops
 #    (copy from templates/CLAUDE-md-sections.md)
 
 # 3. Verify it works
-@agent-ops-refiner what does this project do
+/agent-ops:refine what does this project do
 ```
 
 See [setup guide](docs/SETUP.md) for project configuration details.
 
 ### Other tools
 
-Use the markdown body of any agent file as a system prompt.
-The autonomous pipeline requires subagent support. Independent
-reviewer context requires isolated subagent sessions.
+Use the markdown body of any skill or agent file as a system prompt.
+The autonomous pipeline requires subagent support; independent review
+requires isolated subagent sessions; hook enforcement requires
+Claude Code.
 
 ## How agent-ops works
 
-Five agents, six skills, one enforced pipeline. The coordinator runs
-end-to-end; the specialists handle individual phases when called directly.
+Entry-point commands drive one enforced pipeline in your main
+conversation. Two agents exist for the two jobs that need isolated
+contexts: independent review and maintenance runs.
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  agent-ops (coordinator)                            │
+│  /agent-ops:build · :plan · :implement              │
+│  (pipeline skill — runs in your conversation)       │
 │                                                     │
-│  ┌─ Entry points ──────────────────────────────┐    │
-│  │ full pipeline · plan-only · implement-plan  │    │
-│  └─────────────────────────────────────────────┘    │
+│  Refine (fork) → Plan (fork) → Build → Simplify     │
+│                → Gate → Review (isolated agent)     │
 │                                                     │
-│  Skill discovery → load skills for current phase    │
-│  Pipeline        → refine · plan · build · verify   │
-│                    · simplify · review              │
 │  Red-green       → failing test first, per task     │
 │  Gate (enforced) → tests · typecheck · lint · build │
+│  Stop hook       → can't end turn on a failing gate │
 │  Circuit breaker → 3 fails → escalate with context  │
 │  Decision points → 2 human approvals (plan, code)   │
 └─────────────────────────────────────────────────────┘
@@ -74,16 +75,20 @@ end-to-end; the specialists handle individual phases when called directly.
 
 **Key design choices:**
 
-- **Gates are enforced, not advised.** Verification runs four commands
-  from your CLAUDE.md. "Override" is the only escape hatch and it stamps
-  the artifact so every downstream reviewer knows.
+- **Gates are enforced, not advised.** The pipeline runs four commands
+  from your CLAUDE.md, and a Stop hook blocks ending the turn on an
+  unpassed gate. "Override" is the only escape hatch and it stamps the
+  artifact so every downstream reviewer knows.
 - **Red-green by default.** Build tasks write a failing test first,
   confirm it fails for the right reason, then implement. Carve-outs
   (UI polish, config, migrations, docs) are explicit.
 - **Reviewers run in isolated contexts.** Independent review is a
-  structural fix for anchoring bias, not a process preference.
-- **Two decisions, not six.** Approve the plan, approve the code.
-  Everything in between is automated.
+  structural fix for anchoring bias, not a process preference. The
+  reviewer is an agent precisely so it never sees the builder's
+  reasoning.
+- **Only humans approve.** Two decisions (plan, code) — and only a
+  human moves a plan to Approved. The pipeline refuses to execute
+  plans in any other state than Approved or In Progress.
 
 <details>
 <summary><b>Pipeline flow diagram</b></summary>
@@ -125,61 +130,74 @@ graph TD
 
 ```mermaid
 sequenceDiagram
-    You->>agent-ops: add push notifications
-    Note right of agent-ops: Refine → Plan → Review plan
-    agent-ops->>You: Plan + verdict (0 blocking)
-    You->>agent-ops: go ahead
-    Note right of agent-ops: Build → Simplify → Gate → Review code
-    agent-ops->>You: Code + verdict (Ship it)
-    You->>agent-ops: ship it
+    You->>pipeline: /agent-ops:build add push notifications
+    Note right of pipeline: Refine → Plan → Review plan
+    pipeline->>You: Plan + verdict (0 blocking)
+    You->>pipeline: go ahead
+    Note right of pipeline: Build → Simplify → Gate → Review code
+    pipeline->>You: Code + verdict (Ship it)
+    You->>pipeline: ship it
 ```
 
 **Plan now, build later**
 
 ```mermaid
 sequenceDiagram
-    You->>agent-ops: plan the auth migration
-    Note right of agent-ops: Refine → Plan → Review
-    agent-ops->>You: Plan + verdict
-    You->>agent-ops: approved
-    Note right of agent-ops: Saved to plans/
+    You->>pipeline: /agent-ops:plan the auth migration
+    Note right of pipeline: Refine → Plan → Review
+    pipeline->>You: Plan + verdict
+    You->>pipeline: approved
+    Note right of pipeline: Saved to the plans directory
     Note over You: Days later...
-    You->>agent-ops: implement plans/2026-04-06-auth.md
-    Note right of agent-ops: Build → Simplify → Gate → Review
-    agent-ops->>You: Code + verdict
-    You->>agent-ops: ship it
+    You->>pipeline: /agent-ops:implement plans/2026-04-06-auth.md
+    Note right of pipeline: Pre-flight → Build → Simplify → Gate → Review
+    pipeline->>You: Code + verdict
+    You->>pipeline: ship it
 ```
 
 </details>
 
+## Commands
+
+| Command | What it does |
+|---------|--------------|
+| `/agent-ops:build` | Full pipeline: Define → Plan → Build → Verify → Review |
+| `/agent-ops:plan` | Plan only — saves an approved plan for later |
+| `/agent-ops:implement` | Pre-flight checks, then build an Approved/In Progress plan |
+| `/agent-ops:refine` | Shape a rough idea into a precise prompt (forked context) |
+| `/agent-ops:review` | Spawn the isolated reviewer on a plan, diff, or tests |
+| `/agent-ops:verification-gate` | Run the four gate checks from CLAUDE.md |
+| `/agent-ops:test-first` | The red-green loop, runnable standalone |
+| `/agent-ops:maintain` | Health checks by cadence, single checks, or error triage |
+
 ## Agents
 
-Five agents: one coordinator plus four phase specialists. Call the
-coordinator for end-to-end runs, or call a specialist directly.
+Two agents — kept only because their jobs need isolated contexts.
+Everything else is a skill.
 
-| Agent | Role | Use When |
-|-------|------|----------|
-| [agent-ops](agents/agent-ops.md) | Coordinator — full Define → Plan → Build → Verify → Review pipeline | Building a feature end-to-end or implementing an approved plan |
-| [agent-ops-refiner](agents/agent-ops-refiner.md) | Define — shapes rough ideas into precise, role-specific prompts | You have a vague idea and want it structured before planning |
-| [agent-ops-planner](agents/agent-ops-planner.md) | Plan — creates structured plans with runnable verification steps | You have a clear prompt and need an executable task breakdown |
-| [agent-ops-reviewer](agents/agent-ops-reviewer.md) | Review — independent reviews of plans, code, or tests | You want a second opinion from a context-isolated reviewer |
-| [agent-ops-maintain](agents/agent-ops-maintain.md) | Maintain — hygiene checks and production error triage | Running weekly/monthly health checks or investigating errors |
+| Agent | Role | Why an agent |
+|-------|------|--------------|
+| [agent-ops-reviewer](agents/agent-ops-reviewer.md) | Independent reviews of plans, code, or tests | Must never see the builder's reasoning (anchoring bias) |
+| [agent-ops-maintain](agents/agent-ops-maintain.md) | Hygiene checks and production error triage | Heavy tool output, no human interaction, runs scheduled |
 
 ## Skills
 
-Skills are markdown files that agents load at runtime. They encode
-workflows, output contracts, and quality gates.
+Internal skills carry the contracts; agents and commands reference
+them instead of restating them.
 
 | Phase | Skill | What It Does |
 |-------|-------|--------------|
-| Define | [refiner-roles](skills/refiner-roles.md) | Lookup table of engineering role perspectives for shaping ideas |
-| Plan | [plan-format](skills/plan-format.md) | Output template for plans: task structure, verification, scope |
-| Build | [test-first](skills/test-first.md) | Red-green loop: failing test first, confirm honest red, then green |
-| Verify | [verification-gate](skills/verification-gate.md) | Four enforced checks: tests, typecheck, lint, build |
-| Review | [review-criteria](skills/review-criteria.md) | Review type routing, intensity levels, and verdict output contract |
-| Maintain | [maintenance-checks](skills/maintenance-checks.md) | Dispatches scheduled maintenance tasks and error triage |
+| All | [pipeline](skills/pipeline/SKILL.md) | The enforced pipeline: modes, pre-flight, steps, non-negotiables |
+| Define | [refiner-roles](skills/refiner-roles/SKILL.md) | Engineering role perspectives for shaping ideas |
+| Plan | [planner](skills/planner/SKILL.md) | Investigated task breakdowns with runnable verification |
+| Plan | [plan-format](skills/plan-format/SKILL.md) | Plan template: tasks, verification, scope, status lifecycle |
+| Build | [test-first](skills/test-first/SKILL.md) | Red-green loop: failing test first, honest red, then green |
+| Verify | [verification-gate](skills/verification-gate/SKILL.md) | Four enforced checks + the override/stamp protocol |
+| Review | [review-criteria](skills/review-criteria/SKILL.md) | Review routing, intensity levels, verdict contract |
+| Maintain | [maintenance-checks](skills/maintenance-checks/SKILL.md) | Dispatches scheduled maintenance tasks and error triage |
 
-Agents also discover skills from installed plugins at runtime — see
+Installed plugin and project skills are discovered automatically at
+runtime and used alongside these — see
 [Works great with](#works-great-with).
 
 ## Enforcement
@@ -194,14 +212,16 @@ Agents also discover skills from installed plugins at runtime — see
   ✅ Passed. Proceeding to review.
 ```
 
-3 failures → escalates to you with full context.
+3 failures → escalates to you with full context. A Stop hook blocks
+ending the turn on a failing gate, and a SubagentStop hook holds the
+reviewer to its verdict contract — see [hooks](docs/HOOKS.md).
 
 ## Repo structure
 
 ```
-├── agents/          5 agents — coordinator + 4 specialists
-├── skills/          6 skills — gate, test-first, review, plan format, maintenance, roles
-├── workflows/       4 workflows — feature, plan-only, add-tests, template
+├── skills/          8 commands + internal skills (pipeline, contracts)
+├── agents/          2 agents — reviewer + maintainer (isolation cases)
+├── hooks/           Stop gate enforcement, reviewer contract check
 ├── maintenance/     26 tasks by category
 │   ├── code-health/   complexity, dead code, TODOs, deps, bundle
 │   ├── security/      vulns, secrets, licenses, OWASP
@@ -210,35 +230,39 @@ Agents also discover skills from installed plugins at runtime — see
 │   ├── ai-docs/       CLAUDE.md, skills, prompts, best practices, ecosystem
 │   └── documentation/ README, API docs, changelog
 ├── templates/       CLAUDE.md sections for your project
-└── docs/            setup, customizing, scheduled tasks, philosophy
+└── docs/            setup, customizing, hooks, scheduled tasks, workflows, philosophy
 ```
 
 ## Works great with
 
 **[agent-skills](https://github.com/addyosmani/agent-skills)** —
-engineering skills for Define → Ship. Agents discover and use
-these automatically at runtime, alongside any other installed
-plugin skills. Recommended but not required — the pipeline works
-standalone.
+engineering skills for Define → Ship. The pipeline discovers and uses
+these automatically at runtime, alongside any other installed plugin
+skills. Recommended but not required — the pipeline works standalone.
 
 ## Design
 
 - **Markdown, not runtime.** No dependencies, no build step, no lock-in.
-  Works wherever your host tool runs. Uninstall by deleting.
-- **State in conversation.** Plans and reports are written to disk. The
-  pipeline sequence (which phase is next, retry count) lives in
-  conversation context — closing the conversation stops the pipeline.
-  Resume by referencing the saved plan or report.
-- **Claude Code-first.** The full autonomous pipeline needs subagent
-  support. Independent review needs isolated contexts. In single-context
-  tools, the reviewer shares the builder's thread.
+  Uninstall by deleting. The only non-markdown piece is a declarative
+  hooks.json.
+- **State on disk.** Plans and reports are files; plan status and the
+  Progress Log survive across sessions. The in-flight pipeline sequence
+  lives in conversation context — resume by pointing
+  `/agent-ops:implement` at the saved plan.
+- **Claude Code-first.** The full pipeline needs skills, subagents, and
+  hooks. In single-context tools, the reviewer shares the builder's
+  thread — agent-ops is honest about that limitation.
 - **Commands in CLAUDE.md.** The framework defines what to check;
   your project defines how. No hardcoded tool names.
+- **Native-feature friendly.** Plan mode, `/code-review`, and verify-
+  style skills overlap parts of this pipeline; agent-ops adds the
+  enforced sequence, persistent plan files, and maintenance layer.
+  See [philosophy](docs/PHILOSOPHY.md).
 
 ## Docs
 
-- [Setup](docs/SETUP.md) | [Customizing](docs/CUSTOMIZING.md)
-- [Scheduled tasks](docs/SCHEDULED-TASKS.md) | [Philosophy](docs/PHILOSOPHY.md)
+- [Setup](docs/SETUP.md) | [Customizing](docs/CUSTOMIZING.md) | [Hooks](docs/HOOKS.md)
+- [Scheduled tasks](docs/SCHEDULED-TASKS.md) | [Workflows](docs/workflows/) | [Philosophy](docs/PHILOSOPHY.md)
 
 ## Resources
 
